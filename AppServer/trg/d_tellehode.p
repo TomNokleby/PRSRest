@@ -5,6 +5,7 @@ TRIGGER PROCEDURE FOR DELETE OF TelleHode.
 /*DEF BUFFER trgTelleLinje   FOR TelleLinje. */
 /*DEF BUFFER tgtLokTelleHode FOR TelleHode.  */
 
+/* GIT */
 
 /* Sletter linjene for tellelisten. */
 /*
@@ -27,13 +28,13 @@ IF AVAILABLE VPIFilHode THEN
     DELETE VPIFilHode.
 */
 
-/* Er tellelisten en telleliste, skal også de tilkoblede lokasjonslistene slettes */
+/* Er tellelisten en telleliste, skal ogsï¿½ de tilkoblede lokasjonslistene slettes */
 /*
 IF TelleHode.TelleType = 1 THEN
 DO:
     FOR EACH tgtLokTelleHode EXCLUSIVE-LOCK WHERE
         tgtLokTelleHode.KobletTilTelleNr = TelleHode.TelleNr:
-        /* Sletter linjene på lokasjonslisten. */
+        /* Sletter linjene pï¿½ lokasjonslisten. */
         FOR EACH trgTelleLinje OF tgtLokTelleHode:
             DELETE trgTelleLinje.
         END.
