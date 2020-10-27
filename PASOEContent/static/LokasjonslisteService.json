@@ -1,0 +1,114 @@
+{
+    "version": "1.5",
+    "lastModified": "Sat Oct 13 15:53:08 CEST 2018",
+    "services": [{
+        "name": "LokasjonslisteService",
+        "address": "\/rest\/LokasjonslisteService",
+        "useRequest": true,
+        "resources": [{
+            "name": "LokasjonsListe",
+            "path": "\/LokasjonsListe",
+            "autoSave": false,
+            "operations": [
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "delete",
+                    "verb": "delete",
+                    "params": [
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "?filter={filter}",
+                    "useBeforeImage": true,
+                    "type": "read",
+                    "verb": "get",
+                    "params": [
+                        {
+                            "name": "filter",
+                            "type": "QUERY"
+                        },
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "update",
+                    "verb": "put",
+                    "params": [
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "name": "count",
+                    "path": "\/count",
+                    "useBeforeImage": false,
+                    "type": "invoke",
+                    "verb": "put",
+                    "params": [
+                        {
+                            "name": "filter",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "numRecs",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "create",
+                    "verb": "post",
+                    "params": [
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "name": "SubmitLokasjonsListe",
+                    "path": "\/SubmitLokasjonsListe",
+                    "useBeforeImage": true,
+                    "type": "submit",
+                    "verb": "put",
+                    "params": [
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsTelleLinje",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                }
+            ]
+        }]
+    }]
+}

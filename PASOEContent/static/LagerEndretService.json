@@ -1,0 +1,113 @@
+{
+    "version": "1.5",
+    "lastModified": "Sat Oct 13 15:52:10 CEST 2018",
+    "services": [{
+        "name": "LagerEndretService",
+        "address": "\/rest\/LagerEndretService",
+        "useRequest": true,
+        "resources": [{
+            "name": "LagerEndret",
+            "path": "\/LagerEndret",
+            "autoSave": true,
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {"ttLagerEndret": {
+                    "type": "array",
+                    "primaryKey": ["Kode"],
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "semanticType": "Internal"
+                            },
+                            "_errorString": {
+                                "type": "string",
+                                "semanticType": "Internal"
+                            },
+                            "id": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "id"
+                            },
+                            "seq": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": null,
+                                "title": "seq"
+                            },
+                            "Kode": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "Strekkode",
+                                "semanticType": "Text"
+                            },
+                            "ButikkNr": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "ButikkNr"
+                            },
+                            "ArtikkelNr": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "Artikkelnummer"
+                            },
+                            "StrKode": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "StrKode"
+                            },
+                            "Storl": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "Storl"
+                            },
+                            "LagAnt": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "LagAnt"
+                            },
+                            "vVarekost": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "vVarekost"
+                            },
+                            "EndretDato": {
+                                "type": "string",
+                                "ablType": "DATETIME",
+                                "default": null,
+                                "title": "Endret",
+                                "format": "date-time"
+                            }
+                        }
+                    }
+                }}
+            },
+            "operations": [{
+                "path": "?filter={filter}",
+                "useBeforeImage": false,
+                "type": "read",
+                "verb": "get",
+                "params": [
+                    {
+                        "name": "filter",
+                        "type": "QUERY"
+                    },
+                    {
+                        "name": "ttLagerEndret",
+                        "type": "RESPONSE_BODY"
+                    }
+                ]
+            }]
+        }]
+    }]
+}

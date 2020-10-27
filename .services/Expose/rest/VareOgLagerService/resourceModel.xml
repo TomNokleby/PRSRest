@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prgs:model xmlns:prgs="http://www.progress.com/caf/camel/component/prgrs" id="resourceModel">
+  <prgs:resource consumes="application/json" name="VareOgLager" path="/VareOgLager" produces="application/json">
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/VareOgLager.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.VareOgLager..ReadVareOgLager" path="" produces="application/json" verb="GET">
+      <prgs:param name="filter" type="QUERY"/>
+    </prgs:operation>
+  </prgs:resource>
+</prgs:model>

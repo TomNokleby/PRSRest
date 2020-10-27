@@ -1,0 +1,51 @@
+{
+    "version": "1.5",
+    "lastModified": "Sat Oct 13 15:53:45 CEST 2018",
+    "services": [{
+        "name": "VareService",
+        "address": "\/rest\/VareService",
+        "useRequest": true,
+        "resources": [{
+            "name": "Vare",
+            "path": "\/Vare",
+            "autoSave": true,
+            "operations": [
+                {
+                    "path": "?filter={filter}",
+                    "useBeforeImage": false,
+                    "type": "read",
+                    "verb": "get",
+                    "mappingType": "JFP",
+                    "capabilities": "ablFilter,top,skip,id,orderBy",
+                    "params": [
+                        {
+                            "name": "filter",
+                            "type": "QUERY"
+                        },
+                        {
+                            "name": "dsVare",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "name": "count",
+                    "path": "\/count",
+                    "useBeforeImage": false,
+                    "type": "invoke",
+                    "verb": "put",
+                    "params": [
+                        {
+                            "name": "filter",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "numRecs",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                }
+            ]
+        }]
+    }]
+}

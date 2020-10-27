@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<prgs:model xmlns:prgs="http://www.progress.com/caf/camel/component/prgrs" id="resourceModel">
+  <prgs:resource consumes="application/json" name="LokasjonsListe" path="/LokasjonsListe" produces="application/json">
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..DeleteLokasjonsListe" path="" produces="application/json" verb="DELETE"/>
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..ReadLokasjonsListe" path="" produces="application/json" verb="GET">
+      <prgs:param name="filter" type="QUERY"/>
+    </prgs:operation>
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..UpdateLokasjonsListe" path="" produces="application/json" verb="PUT"/>
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..CreateLokasjonsListe" path="" produces="application/json" verb="POST"/>
+  </prgs:resource>
+  <prgs:resource name="LokasjonsListe_count" path="/LokasjonsListe/count">
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..count" path="" produces="application/json" verb="PUT"/>
+  </prgs:resource>
+  <prgs:resource name="LokasjonsListe_SubmitLokasjonsListe" path="/LokasjonsListe/SubmitLokasjonsListe">
+    <prgs:operation consumes="application/json" idls="PRSRest/.services/AppServer/rfid/LokasjonsListe.pidl::com.progress.openedge.pdt.bpmbindings" name="rfid.LokasjonsListe..SubmitLokasjonsListe" path="" produces="application/json" verb="PUT"/>
+  </prgs:resource>
+</prgs:model>

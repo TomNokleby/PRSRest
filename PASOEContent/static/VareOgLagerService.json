@@ -1,0 +1,185 @@
+{
+    "version": "1.5",
+    "lastModified": "Sat Oct 13 15:54:48 CEST 2018",
+    "services": [{
+        "name": "VareOgLagerService",
+        "address": "\/rest\/VareOgLagerService",
+        "useRequest": true,
+        "resources": [{
+            "name": "VareOgLager",
+            "path": "\/VareOgLager",
+            "autoSave": true,
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {"ttVareLager": {
+                    "type": "array",
+                    "primaryKey": ["Kode"],
+                    "items": {
+                        "additionalProperties": false,
+                        "properties": {
+                            "_id": {
+                                "type": "string",
+                                "semanticType": "Internal"
+                            },
+                            "_errorString": {
+                                "type": "string",
+                                "semanticType": "Internal"
+                            },
+                            "id": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "id"
+                            },
+                            "seq": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": null,
+                                "title": "seq"
+                            },
+                            "Kode": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "Strekkode",
+                                "semanticType": "Text"
+                            },
+                            "ButikkNr": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "ButikkNr"
+                            },
+                            "ArtikkelNr": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "Artikkelnummer"
+                            },
+                            "Beskr": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "Beskr"
+                            },
+                            "LevKod": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "LevKod"
+                            },
+                            "LevFargKod": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "LevFargKod"
+                            },
+                            "VmId": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "VmId"
+                            },
+                            "VmBeskr": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "VmBeskr"
+                            },
+                            "StrKode": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "StrKode"
+                            },
+                            "Storl": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "Storl"
+                            },
+                            "Sasong": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "Sasong"
+                            },
+                            "SasBeskr": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "SasBeskr"
+                            },
+                            "LevNr": {
+                                "type": "integer",
+                                "ablType": "INTEGER",
+                                "default": 0,
+                                "title": "LevNr"
+                            },
+                            "LevBeskr": {
+                                "type": "string",
+                                "ablType": "CHARACTER",
+                                "default": "",
+                                "title": "LevBeskr"
+                            },
+                            "LagAnt": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "LagAnt"
+                            },
+                            "vVarekost": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "vVarekost"
+                            },
+                            "Pris": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "Pris"
+                            },
+                            "InnkjopsPris": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "InnkjopsPris"
+                            },
+                            "Varekost": {
+                                "type": "number",
+                                "ablType": "DECIMAL",
+                                "default": 0,
+                                "title": "Varekost"
+                            },
+                            "EDato": {
+                                "type": "string",
+                                "ablType": "DATE",
+                                "default": null,
+                                "title": "Endret",
+                                "format": "date"
+                            }
+                        }
+                    }
+                }}
+            },
+            "operations": [{
+                "path": "?filter={filter}",
+                "useBeforeImage": false,
+                "type": "read",
+                "verb": "get",
+                "params": [
+                    {
+                        "name": "filter",
+                        "type": "QUERY"
+                    },
+                    {
+                        "name": "ttVareLager",
+                        "type": "RESPONSE_BODY"
+                    }
+                ]
+            }]
+        }]
+    }]
+}
