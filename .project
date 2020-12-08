@@ -3,6 +3,7 @@
 	<name>PRSRest</name>
 	<comment></comment>
 	<projects>
+		<project>PRS</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

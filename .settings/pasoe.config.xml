@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <PASOEConfigDetails version="11.7">
 <webapp>PRSRest</webapp>
+<servers>
+<server>pasPRSRest in laptop-cenee05l.pasPRSRest (Progress Application Server for OpenEdge 11.7)</server>
+</servers>
 </PASOEConfigDetails>

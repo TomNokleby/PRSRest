@@ -150,24 +150,30 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         EMPTY TEMP-TABLE ttVare.
 
         jsonParser = NEW ObjectModelParser().
+        
         jsonObject = CAST(jsonParser:Parse(filter), jsonObject).
+        
         iMaxRows = jsonObject:GetInteger("top") NO-ERROR.
         iSkipRows = jsonObject:GetInteger("skip") NO-ERROR.
         ablFilter = jsonObject:GetCharacter("ablFilter") NO-ERROR.
         id = jsonObject:GetCharacter("id") NO-ERROR.
+        
         cOrderBy = jsonObject:GetCharacter("orderBy") NO-ERROR.
+        
         cWhere = "WHERE " + ablFilter NO-ERROR.
-        IF cOrderBy > "" THEN 
+        IF cOrderBy > "" THEN
+        ORDERBYBLOKK: 
         DO:
             cOrderBy = REPLACE(cOrderBy, ",", " by ").
             cOrderBy = "by " + cOrderBy + " ".
+        
             /* NOTE: id and seq fields should be removed from
             cWhere and cOrderBy */
             cOrderBy = REPLACE(cOrderBy, "by id desc", "").
             cOrderBy = REPLACE(cOrderBy, "by id ", "").
             cOrderBy = REPLACE(cOrderBy, "by seq desc", "").
             cOrderBy = REPLACE(cOrderBy, "by seq ", "").
-        END.
+        END. /* ORDERBYBLOKK */
         lUseReposition = iSkipRows <> ?.
         IF iMaxRows <> ? AND iMaxRows > 0 THEN 
         DO:
@@ -180,11 +186,14 @@ CLASS rfid.Vare INHERITS BusinessEntity:
             ELSE
                 BUFFER ttVare:HANDLE:BATCH-SIZE = 0.
         END.
+        
         BUFFER ttVare:ATTACH-DATA-SOURCE(DATA-SOURCE srcVare:HANDLE).
         IF cOrderBy = ? THEN cOrderBy = "".
         cWhere = IF cWhere > "" THEN (cWhere + " " + cOrderBy)
         ELSE ("WHERE " + cOrderBy).
+        
         DATA-SOURCE srcVare:FILL-WHERE-STRING = cWhere.
+        
         IF lUseReposition THEN 
         DO:
             hQuery = DATA-SOURCE srcVare:QUERY.
