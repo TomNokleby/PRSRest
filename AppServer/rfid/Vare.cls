@@ -28,8 +28,11 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     {"rfid\dsVare.i"}
     
     DEFINE DATA-SOURCE srcVare FOR StrekKode.
-    
-    DEFINE VARIABLE iSeq AS INTEGER NO-UNDO.  
+        
+    DEFINE VARIABLE iSeq AS INTEGER NO-UNDO.
+    DEFINE VARIABLE iNetBut AS INTEGER NO-UNDO. 
+    DEFINE VARIABLE iProfilNr AS INTEGER NO-UNDO. 
+       
     
     /*------------------------------------------------------------------------------
             Purpose:                                                                      
@@ -42,6 +45,8 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         
         SUPER (DATASET dsVare:HANDLE).
         
+        DATASET dsVare:SET-CALLBACK ( "BEFORE-FILL" , "preDataSetFill" ).
+
         /* Data Source for each table in dataset. Should be in table order as defined 
             in DataSet */     
          hDataSourceArray[1] =  DATA-SOURCE srcVare:HANDLE.
@@ -193,6 +198,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         ELSE ("WHERE " + cOrderBy).
         
         DATA-SOURCE srcVare:FILL-WHERE-STRING = cWhere.
+        BUFFER ttVarePris:FILL-MODE = "NO-FILL". 
         
         IF lUseReposition THEN 
         DO:
@@ -271,7 +277,17 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     ------------------------------------------------------------------------------*/
 
     METHOD PUBLIC VOID supplerInfoVare( INPUT pcKode AS CHARACTER  ):
-        DEFINE VARIABLE pdDato AS DATE NO-UNDO.                                            
+        DEFINE VARIABLE pdDato AS DATE NO-UNDO.             
+        
+        DEFINE BUFFER bufButiker FOR Butiker.
+        
+        {syspara.i 150 1 2 iNetBut INT}
+        FIND bufButiker NO-LOCK WHERE 
+          bufButiker.Butik = iNetBut NO-ERROR.
+        IF AVAILABLE bufButiker THEN 
+            iProfilNr = bufButiker.ProfilNr.
+        ELSE 
+            iProfilNr = 16.
 
         /* Legg inn kode her for å berike temp tabellen. */
         FIND ArtBas OF ttVare NO-LOCK NO-ERROR.
@@ -287,11 +303,16 @@ CLASS rfid.Vare INHERITS BusinessEntity:
             ttVare.Farg    = ArtBas.Farg
             ttVare.Sasong  = ArtBas.Sasong
             ttVare.LevNr   = ArtBas.LevNr
+            ttVare.NOS = (IF ArtBas.Lagerkoder MATCHES '*NOS*' THEN 'NOS' ELSE '')              
             .
 
             FIND ArtPris NO-LOCK WHERE
                 ArtPris.ArtikkelNr = ttVare.ArtikkelNr AND  
-                ArtPris.ProfilNr = 1 NO-ERROR.
+                ArtPris.ProfilNr = bufButiker.ProfilNr NO-ERROR.
+            IF NOT AVAILABLE ArtPris THEN 
+              FIND ArtPris NO-LOCK WHERE
+                  ArtPris.ArtikkelNr = ttVare.ArtikkelNr AND  
+                  ArtPris.ProfilNr = 1 NO-ERROR.
             IF AVAILABLE ArtPris THEN 
             DO:
                 ASSIGN
@@ -300,8 +321,40 @@ CLASS rfid.Vare INHERITS BusinessEntity:
                 ttVare.Varekost = ArtPris.VareKost[1]
                 ttVare.Pris = IF ttVare.Pris = ? THEN 0 ELSE ttVare.Pris                 
                 ttVare.InnkjopsPris = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris                 
-                ttVare.VareKost = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost                 
+                ttVare.VareKost = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost   
+                ttVare.ProfilNr = ArtPris.ProfilNr
+                ttVare.TilbPris = ArtPris.Pris[2]
+                ttVare.Mva% = ArtPris.Mva%[1]
+                ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
+                ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?  
                 .
+                FOR EACH Butiker NO-LOCK WHERE 
+                  Butiker.ApningsDato <= TODAY AND 
+                  Butiker.harButikkSystem = TRUE AND 
+                  Butiker.NedlagtDato = ? AND 
+                  Butiker.Butik <= 9999:
+                  IF CAN-DO('848,849',STRING(Butiker.Butik)) THEN 
+                    NEXT.
+                  CREATE ttVarePris.
+                  ASSIGN
+                    ttVarePris.Seq = ttVare.Seq
+                    ttVarePris.Kode = ttVare.Kode
+                    ttVarePris.ProfilNr = ArtPris.ProfilNr
+                    ttVarePris.Pris = ArtPris.Pris[1]
+                    ttVarePris.ButikkNr = Butiker.Butik
+                    ttVarePris.InnkjopsPris = ArtPris.InnkjopsPris[1]
+                    ttVarePris.Varekost = ArtPris.VareKost[1]
+                    ttVarePris.Pris = IF ttVarePris.Pris = ? THEN 0 ELSE ttVarePris.Pris                 
+                    ttVarePris.InnkjopsPris = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
+                    ttVarePris.VareKost = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
+                    ttVarePris.Mva% = ArtPris.Mva%[1]
+                    ttVarePris.TilbPris = ArtPris.Pris[2]
+                    ttVarePris.TilbPris = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
+                    ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
+                    ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
+                    ttVarePris.EDato = ArtPris.EDato 
+                    .
+                END.  
             END.  
             FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
             IF AVAILABLE VarGr THEN 
@@ -337,6 +390,16 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         RETURN.
 
     END METHOD.
-     
+
+  /*------------------------------------------------------------------------------
+   Purpose:
+   Notes:
+  ------------------------------------------------------------------------------*/
+
+  METHOD PUBLIC VOID preDataSetFill( INPUT DATASET dsvare ):
+    
+    RETURN.
+
+  END METHOD.
     
 END CLASS.

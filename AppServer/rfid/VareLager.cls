@@ -31,6 +31,7 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
     DEFINE DATA-SOURCE srcLager FOR Lager.
     
     DEFINE VARIABLE iSeq AS INTEGER NO-UNDO.
+    DEFINE VARIABLE iNetBut AS INTEGER NO-UNDO.
     
     /*------------------------------------------------------------------------------
             Purpose:                                                                      
@@ -70,7 +71,7 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
 
         ASSIGN 
             ttVareLager.id  = STRING(ROWID(Strekkode))
-            iSeq        = iSeq + 1
+            iSeq            = iSeq + 1
             ttVareLager.seq = iSeq
             .
 
@@ -269,6 +270,10 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
     METHOD PUBLIC VOID supplerInfoLager( INPUT pcKode AS CHARACTER  ):
         DEFINE VARIABLE pdDato AS DATE NO-UNDO.                                            
 
+        {syspara.i 150 1 2 iNetBut INT}
+        FIND Butiker NO-LOCK WHERE 
+          Butiker.Butik = iNetBut NO-ERROR.
+          
         /* Legg inn kode her for å berike temp tabellen. */
         FIND ArtBas OF ttVareLager NO-LOCK NO-ERROR.
         IF AVAILABLE ArtBas THEN
@@ -282,10 +287,14 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
             ttVareLager.Sasong  = ArtBas.Sasong
             ttVareLager.LevNr   = ArtBas.LevNr
             .
-
+            IF AVAILABLE Butiker THEN 
             FIND ArtPris NO-LOCK WHERE
                 ArtPris.ArtikkelNr = ttVareLager.ArtikkelNr AND  
-                ArtPris.ProfilNr = 1 NO-ERROR.
+                ArtPris.ProfilNr = Butiker.ProfilNr NO-ERROR.
+            IF NOT AVAILABLE ArtPris THEN 
+              FIND ArtPris NO-LOCK WHERE
+                  ArtPris.ArtikkelNr = ttVareLager.ArtikkelNr AND  
+                  ArtPris.ProfilNr = 1 NO-ERROR.
             IF AVAILABLE ArtPris THEN 
             DO:
                 ASSIGN

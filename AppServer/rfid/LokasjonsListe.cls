@@ -328,7 +328,7 @@ CLASS rfid.LokasjonsListe INHERITS BusinessEntity:
                     summerTelling( INPUT pLokTelleNr ). 
                 END.    
                     
-                /* Legger på linjeinformasjon */
+                /* Legger pï¿½ linjeinformasjon */
                 FIND StrekKode NO-LOCK WHERE 
                     StrekKode.Kode = ttTelleLinje.Kode NO-ERROR.
                 IF NOT AVAILABLE StrekKode THEN 
@@ -414,7 +414,7 @@ CLASS rfid.LokasjonsListe INHERITS BusinessEntity:
                     TelleLinje.AntallDiff    = TelleLinje.AntallPar - TelleLinje.AntallTalt
                     TelleLinje.VerdiDiff     = TelleLinje.AntallDiff * TelleLinje.VVareKost
                     .                          
-                RELEASE TelleLinje. /* Denne MÅ få stå */                                
+                RELEASE TelleLinje. /* Denne Mï¿½ fï¿½ stï¿½ */                                
             END.
 
         END. /* TRANSACTION */

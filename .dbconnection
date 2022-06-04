@@ -2,6 +2,6 @@
 <connection>
 <connectionentry identifier="PRSVpi"/>
 <connectionentry identifier="PRSWr"/>
-<connectionentry identifier="PRSSkoTex"/>
-<connectionentry identifier="PRSData"/>
+<connectionentry identifier="GantData"/>
+<connectionentry identifier="GantSkoTex"/>
 </connection>

@@ -24,8 +24,18 @@ CLASS MedlemWebHandler INHERITS WebHandler FINAL:
   {cls\dintero\dsCustomerObj.i}
   {cls\dintero\ttMedlem.i}
   {cls\dintero\dsMedlem.i}
+  
+  DEFINE TEMP-TABLE ttRespons NO-UNDO 
+    FIELD cStatus AS CHARACTER SERIALIZE-NAME 'Status'
+    FIELD cTekst AS CHARACTER SERIALIZE-NAME 'Tekst'
+    FIELD cCustomer_Id AS CHARACTER SERIALIZE-NAME 'customer_id'  
+    .
 
+  DEFINE VARIABLE cLogg AS CHARACTER INITIAL 'MedlemWebHandler' NO-UNDO.
+  DEFINE VARIABLE cLongchar AS LONGCHAR NO-UNDO.
+  
   DEFINE VARIABLE rCustomerDintero AS cls.Dintero.customerDintero NO-UNDO.
+  DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
   
   METHOD OVERRIDE PROTECTED INTEGER HandleNotAllowedMethod( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
     
@@ -59,7 +69,10 @@ CLASS MedlemWebHandler INHERITS WebHandler FINAL:
     DEFINE VARIABLE cEksterntMedlemsNr AS CHARACTER NO-UNDO.
     DEFINE VARIABLE lcJson AS LONGCHAR NO-UNDO.
     DEFINE VARIABLE ix AS INTEGER NO-UNDO.
-    DEFINE VARIABLE cTekst AS CHARACTER NO-UNDO.      
+    DEFINE VARIABLE iLoop AS INTEGER NO-UNDO.
+    DEFINE VARIABLE cTekst AS CHARACTER NO-UNDO.
+    DEFINE VARIABLE cTekstArray AS CHARACTER EXTENT NO-UNDO.  
+        
 
     rCustomerDintero = NEW cls.Dintero.customerDintero( ) NO-ERROR.
           
@@ -70,18 +83,33 @@ CLASS MedlemWebHandler INHERITS WebHandler FINAL:
        https://documentation.progress.com/output/oehttpclient/      */
     ASSIGN 
         oResponse            = NEW OpenEdge.Web.WebResponse()
-        cEksterntMedlemsNr = poRequest:GetPathParameter( 'Id' ) 
+        cEksterntMedlemsNr   = poRequest:URI:GetQueryValue('Id')
+        cEksterntMedlemsNr   = IF cEksterntMedlemsNr = ? THEN '' ELSE cEksterntMedlemsNr 
         oResponse:StatusCode = INTEGER(StatusCodeEnum:OK)
         .
         
-        
-MESSAGE 'TEST cEksterntMedlemsNr:' cEksterntMedlemsNr
-VIEW-AS ALERT-BOX.        
-
+    MESSAGE '  PARAMETRE:'.   
+    MESSAGE '    cEksterntMedlemsNr: ' cEksterntMedlemsNr.   
+    MESSAGE '    HasQueryName ' STRING(poRequest:URI:HasQueryName('Id')). 
+    MESSAGE '    poRequest:URI:GetQueryNames (output cTtekstArray) '  poRequest:URI:GetQueryNames(OUTPUT cTekstArray).
+    DO iLoop = 1 TO EXTENT(cTekstArray):
+      MESSAGE '      cTekstArray:' iLoop  cTekstArray[iLoop] poRequest:URI:GetQueryValue( cTekstArray[iLoop] ).
+    END. 
+    MESSAGE '    poRequest:PathParameterNames:' poRequest:PathParameterNames.
+    MESSAGE '    poRequest:UriTemplate' poRequest:UriTemplate.
+    MESSAGE '    poRequest:GetPathParameter '  poRequest:GetPathParameter( 'Id' ). 
+    MESSAGE '    poRequest:URI:GetQueryValue( Id )' IF poRequest:URI:GetQueryValue('Id') = ? THEN '?' ELSE poRequest:URI:GetQueryValue('Id').
+    MESSAGE '    poRequest:URI:BaseURI:' poRequest:URI:BaseURI.
+    MESSAGE '    poRequest:URI:Path:' poRequest:URI:Path.
+    MESSAGE '    poRequest:URI:QueryString:' poRequest:URI:QueryString.
+    MESSAGE '    poRequest:URI:Scheme:' poRequest:URI:Scheme.
+    MESSAGE '    poRequest:URI:User:' poRequest:URI:User.
+      
     oJsonObject = NEW JSonObject().        
     oJsonArray  = NEW JsonArray().
     
-    IF cEksterntMedlemsNr <> '' THEN
+    IF cEksterntMedlemsNr <> '' AND 
+      poRequest:URI:HasQueryName('id') THEN
       DO:
         FIND FIRST Medlem NO-LOCK WHERE 
           Medlem.EksterntMedlemsNr = cEksterntMedlemsNr NO-ERROR.
@@ -92,61 +120,38 @@ VIEW-AS ALERT-BOX.
           oJsonArray:Add(oJsonObject).
         END.  
       END.
+/*    ELSE IF NOT poRequest:URI:HasQueryName('id') THEN                                                                */
+/*      DO:                                                                                                            */
+/*        iLoop = 0.                                                                                                   */
+/*        MEDLEMLOOP:                                                                                                  */
+/*        FOR EACH Medlem NO-LOCK WHERE                                                                                */
+/*          Medlem.EksterntMedlemsNr > '':                                                                             */
+/*          iLoop = iLoop + 1.                                                                                         */
+/*          RUN cls\dintero\fyllDatasettMedlem.p (Medlem.MedlemsNr, FALSE, INPUT-OUTPUT DATASET dsMedlem BY-REFERENCE).*/
+/*          rCustomerDintero:datasetMedlemToJSon( INPUT DATASET dsMedlem, OUTPUT oJsonObject) NO-ERROR.                */
+/*          IF ERROR-STATUS:ERROR THEN                                                                                 */
+/*            DO:                                                                                                      */
+/*              DO ix = 1 TO ERROR-STATUS:NUM-MESSAGES:                                                                */
+/*                cTekst = cTekst +                                                                                    */
+/*                       (IF cTekst <> '' THEN CHR(10) ELSE '') +                                                      */
+/*                        STRING(ERROR-STATUS:GET-NUMBER(ix)) + ' ' + ERROR-STATUS:GET-MESSAGE(ix).                    */
+/*                MESSAGE 'cTekst:' cTekst                                                                             */
+/*                VIEW-AS ALERT-BOX.                                                                                   */
+/*              END.                                                                                                   */
+/*            END.                                                                                                     */
+/*          oJsonArray:Add(oJsonObject).                                                                               */
+/*          IF iLoop > 100 THEN                                                                                        */
+/*            LEAVE MEDLEMLOOP.                                                                                        */
+/*        END. /* MEDLEMLOOP */                                                                                        */
+/*      END.                                                                                                           */
     ELSE DO:
-      FOR EACH Medlem NO-LOCK WHERE 
-/*        Medlem.EksterntMedlemsNr > '':*/
-        Medlem.EksterntMedlemsNr = '13a96f75-c3f0-4fdf-8307-2022db97139b':
-          MESSAGE 'test-1'
-          VIEW-AS ALERT-BOX.
-        RUN cls\dintero\fyllDatasettMedlem.p (Medlem.MedlemsNr, FALSE, INPUT-OUTPUT DATASET dsMedlem BY-REFERENCE).
-          FIND FIRST ttMedlem.
-          MESSAGE 'test-2' ttMedlem.EksterntMedlemsNr
-          VIEW-AS ALERT-BOX.
-        rCustomerDintero:datasetMedlemToJSon( INPUT DATASET dsMedlem, OUTPUT oJsonObject) NO-ERROR.
-        IF ERROR-STATUS:ERROR THEN 
-          DO:
-            DO ix = 1 TO ERROR-STATUS:NUM-MESSAGES:    
-              cTekst = cTekst + 
-                     (IF cTekst <> '' THEN CHR(10) ELSE '') + 
-                      STRING(ERROR-STATUS:GET-NUMBER(ix)) + ' ' + ERROR-STATUS:GET-MESSAGE(ix).
-              MESSAGE 'cTekst:' cTekst
-              VIEW-AS ALERT-BOX.
-            END.
-          END.
-          MESSAGE 'test-3'
-          VIEW-AS ALERT-BOX.
         oJsonArray:Add(oJsonObject).
-          MESSAGE 'test-4'
-          VIEW-AS ALERT-BOX.
-      END.
-    END.
-/*    /* Fant ikke medlemmet. */      */
-/*    ELSE DO:                        */
-/*        oJsonArray:Add(oJsonObject).*/
-/*    END.                            */
-    
-    /* Respons objektet. */
-    lcJson = oJsonArray:GetJsonText().
-    ASSIGN 
-        oBody = NEW OpenEdge.Core.String(lcJSON)
-        NO-ERROR.            
-
-    /* This body object can be a string or something else (JsonObject for instance) */               
-/*    ASSIGN                                                                            */
-/*        oBody = NEW OpenEdge.Core.String(                                             */
-/*                         'Hello tomn'                                                 */
-/*                       + '~r~n':u   /*CRLF */                                         */
-/*                       + 'This message was returned by HandleGet in MedlemWebHandler.'*/
-/*                       ).                                                             */
-
+      END. 
 
     ASSIGN 
-        oResponse:Entity        = oBody
+        oResponse:Entity        = oJsonArray
         /* HTTP messages require a content type */
-/*        oResponse:ContentType   = 'text/plain':u*/
         oResponse:ContentType   = 'application/json':u
-        /* ContentLength is good too */
-        oResponse:ContentLength = oBody:Size
         .
     
     /* The WebResponseWriter ensures that the status line and
@@ -169,22 +174,86 @@ VIEW-AS ALERT-BOX.
    
    
     /*------------------------------------------------------------------------------
-            Purpose:                                                                
+            Purpose: PUT --> Oppdater.                                                               
             Notes:                                                                        
     ------------------------------------------------------------------------------*/
     METHOD OVERRIDE PROTECTED INTEGER HandlePut( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
-    
-    UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").    
+      
+      /* Behandles likt som POST. */
+      HandlePost( INPUT poRequest ).
+        
     END METHOD.
     
      
    /*------------------------------------------------------------------------------
-            Purpose:                                                                
-            Notes:                                                                        
+            Purpose: POST --> Create.                                                               
+            Notes:   Her er POST implementert slik at den gjør en update hvis
+                     posten finnes fra før.                                                                      
     ------------------------------------------------------------------------------*/
-   METHOD OVERRIDE PROTECTED INTEGER HandlePost( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
+    METHOD OVERRIDE PROTECTED INTEGER HandlePost( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
+
+      DEFINE VARIABLE oResponse AS OpenEdge.Net.HTTP.IHttpResponse NO-UNDO.
+      DEFINE VARIABLE oWriter   AS OpenEdge.Web.WebResponseWriter  NO-UNDO.
+      DEFINE VARIABLE oData     AS JsonObject NO-UNDO.
+      DEFINE VARIABLE oStatus   AS JsonObject NO-UNDO.
+      
+      DEFINE VARIABLE cStatus   AS CHARACTER NO-UNDO.
+      DEFINE VARIABLE pcLogg    AS CHARACTER NO-UNDO.
+  
+      rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
+  
+      ASSIGN 
+        pcLogg = cLogg + REPLACE(STRING(TODAY),'/','')
+        . 
+  
+      IF poRequest:ContentType = 'application/json' THEN 
+        DO:
+          oData = CAST(poRequest:Entity, JsonObject).
+          RUN cls\dintero\customerToDataset.p(oData, OUTPUT DATASET dsCustCustomer ).
+          RUN cls\dintero\customerToMedlem.p(INPUT DATASET dsCustCustomer, OUTPUT cStatus ).
+        END.
+        
+      FIND FIRST ttCustCustomer NO-ERROR.
+
+      /* Logger medlemmer som opprettes. */
+      IF AVAILABLE ttCustCustomer THEN 
+      DO:
+        rStandardFunksjoner:SkrivTilLogg(cLogg,
+          '    Medlem: ' + ttCustCustomer.customer_id + '.'
+          ).    
+      END.  
+      oStatus = NEW JSonObject().
+        
+      CREATE ttRespons.
+      ASSIGN 
+        ttRespons.cStatus      = IF AVAILABLE ttCustCustomer THEN 'OK' ELSE 'FEIL'
+        ttRespons.cTekst       = cStatus
+        ttRespons.cCustomer_Id = IF AVAILABLE ttCustCustomer THEN ttCustCustomer.customer_id ELSE '' 
+        .
+      oStatus:ADD("Status", ttRespons.cStatus).
+      oStatus:ADD("Tekst", ttRespons.cTekst).
+      oStatus:ADD("customer_id", ttRespons.cCustomer_Id).
+
+      ASSIGN 
+        oResponse            = NEW OpenEdge.Web.WebResponse()
+        oResponse:StatusCode = INTEGER(StatusCodeEnum:OK)
+        oResponse:Entity        = oStatus
+        oResponse:ContentType   = 'application/json':u
+        .
+      
+      /* The WebResponseWriter ensures that the status line and
+         all headers are writted out before the message body/entity. */
+      oWriter = NEW WebResponseWriter(oResponse).
+      oWriter:Open().
+      oWriter:Close().
+
+      /* A response of 0 means that this handler will build the entire response;
+         a non-zero value is mapped to a static handler in the webapp's /static/error folder.
+         The mappings are maintained in the webapps's WEB-INF/web.xml 
+         A predefined set of HTTP status codes is provided in the OpenEdge.Net.HTTP.StatusCodeEnum 
+         enumeration */
+      RETURN 0.
     
-    UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").    
     END METHOD.
     
     /*------------------------------------------------------------------------------
@@ -193,8 +262,39 @@ VIEW-AS ALERT-BOX.
     ------------------------------------------------------------------------------*/
      METHOD OVERRIDE PROTECTED INTEGER HandleDelete( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
     
-    UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").      
+      UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").      
     END METHOD.
+
+  /*------------------------------------------------------------------------------
+   Purpose:
+   Notes:
+  ------------------------------------------------------------------------------*/
+
+  METHOD PUBLIC VOID prepMobilNr( INPUT piAction AS INTEGER, INPUT-OUTPUT pcMobilNr AS CHARACTER ):
     
+    ASSIGN 
+        pcMobilNr = REPLACE(pcMobilNr,'0047','+47')
+        pcMobilNr = IF NOT pcMobilNr BEGINS '+47' THEN '+47' + pcMobilNr ELSE pcMobilNr
+        .
+
+    IF piAction = 1 THEN 
+      ASSIGN 
+          pcMobilNr = REPLACE(pcMobilNr,'+','%2B')
+          .
+    
+    RETURN.
+
+  END METHOD.
+
+  /*------------------------------------------------------------------------------
+   Purpose: Konverterer oCustomoer objektet til et datasett.
+   Notes:
+  ------------------------------------------------------------------------------*/
+
+  METHOD PUBLIC VOID datasettCustomerToMedlem( INPUT poCustCustomer AS JSonObject, OUTPUT DATASET dsMedlem ):
+    
+    RETURN.
+
+  END METHOD.
   
 END CLASS.
