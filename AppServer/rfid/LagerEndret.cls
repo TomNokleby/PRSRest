@@ -100,7 +100,9 @@ CLASS rfid.LagerEndret:
             END.
             
             hQuery:GET-NEXT(). 
-        END. /* LOOPEN */      
+        END. /* LOOPEN */ 
+        hQuery:QUERY-CLOSE().
+        DELETE OBJECT hQuery.      
     END METHOD.
     
     

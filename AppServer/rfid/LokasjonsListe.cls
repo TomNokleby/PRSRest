@@ -180,6 +180,8 @@ CLASS rfid.LokasjonsListe INHERITS BusinessEntity:
                 END.
                 iCount = iCount + 1.
             END.
+            hQuery:QUERY-CLOSE.
+            DELETE OBJECT hQuery.
         END.
         ELSE 
         DO:

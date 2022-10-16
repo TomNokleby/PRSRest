@@ -1,0 +1,929 @@
+{
+    "version": "1.5",
+    "lastModified": "Mon Aug 01 12:35:43 CEST 2022",
+    "services": [{
+        "name": "BongService",
+        "address": "\/web\/pdo\/BongService",
+        "useRequest": true,
+        "resources": [{
+            "name": "Bong",
+            "path": "\/BongService",
+            "autoSave": true,
+            "schema": {
+                "type": "object",
+                "additionalProperties": false,
+                "properties": {"dsBongHode": {
+                    "type": "object",
+                    "additionalProperties": false,
+                    "properties": {
+                        "ttBongHode": {
+                            "type": "array",
+                            "primaryKey": ["b_id"],
+                            "items": {
+                                "additionalProperties": false,
+                                "properties": {
+                                    "_id": {
+                                        "type": "string",
+                                        "semanticType": "Internal"
+                                    },
+                                    "_errorString": {
+                                        "type": "string",
+                                        "semanticType": "Internal"
+                                    },
+                                    "BongNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Bongnummer",
+                                        "required": true
+                                    },
+                                    "ButikkNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Butikknummer",
+                                        "required": true
+                                    },
+                                    "GruppeNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Gruppenummer",
+                                        "required": true
+                                    },
+                                    "ODato": {
+                                        "type": "string",
+                                        "ablType": "DATE",
+                                        "default": null,
+                                        "title": "OpprettetDato",
+                                        "format": "date"
+                                    },
+                                    "OTid": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Opprettet tid"
+                                    },
+                                    "OAv": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Opprettet av"
+                                    },
+                                    "EDato": {
+                                        "type": "string",
+                                        "ablType": "DATE",
+                                        "default": null,
+                                        "title": "Endret dato",
+                                        "format": "date"
+                                    },
+                                    "ETid": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Endret tid"
+                                    },
+                                    "EAv": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Endret av"
+                                    },
+                                    "KasseNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Kassenummer",
+                                        "required": true
+                                    },
+                                    "KassererNr": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "Kasserernummer",
+                                        "required": true
+                                    },
+                                    "SelgerNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Selgernummer",
+                                        "required": true
+                                    },
+                                    "KundeNr": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "Kundenummer"
+                                    },
+                                    "MedlemsNr": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "Medlemsnummer"
+                                    },
+                                    "BongStatus": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Status"
+                                    },
+                                    "KassererNavn": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Kasserernavn"
+                                    },
+                                    "SelgerNavn": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Selgernavn"
+                                    },
+                                    "MedlemNavn": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "MedlemNavn"
+                                    },
+                                    "OverforingsNr": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "Overføringsnummer"
+                                    },
+                                    "MedlemsKort": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Medlemskort"
+                                    },
+                                    "KundeKort": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Kundekort"
+                                    },
+                                    "DataSettId": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "DatasettId"
+                                    },
+                                    "UtskriftsKopi": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Utskriftskopi"
+                                    },
+                                    "OpdKvit": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "OpdKvit"
+                                    },
+                                    "OpdUtskKopi": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Utskriftskopi"
+                                    },
+                                    "Konvertert": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Konvertert"
+                                    },
+                                    "Dato": {
+                                        "type": "string",
+                                        "ablType": "DATE",
+                                        "default": null,
+                                        "title": "Dato",
+                                        "format": "date"
+                                    },
+                                    "Tid": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Tid"
+                                    },
+                                    "Belop": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "Beløp"
+                                    },
+                                    "KundeNavn": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Kundenavn"
+                                    },
+                                    "Logg": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Logg"
+                                    },
+                                    "KortType": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Korttype"
+                                    },
+                                    "Gradering": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Gradering"
+                                    },
+                                    "b_id": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "BongId"
+                                    },
+                                    "flBetalingskort": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Betalingskort"
+                                    },
+                                    "flBankkort": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Bankkort"
+                                    },
+                                    "flKreditkort": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Kreditkort"
+                                    },
+                                    "flGavekort": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Gavekort"
+                                    },
+                                    "flSjekk": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Sjekk"
+                                    },
+                                    "flRekvisisasjon": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Rekvisisasjon"
+                                    },
+                                    "flKupong1": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Kupong1"
+                                    },
+                                    "flSlKort": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "flSlKort"
+                                    },
+                                    "flRabatt": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Rabatt"
+                                    },
+                                    "Systemkort": {
+                                        "type": "string",
+                                        "ablType": "CHARACTER",
+                                        "default": "",
+                                        "title": "Systemkort"
+                                    },
+                                    "flSystemkort": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Systemkort"
+                                    },
+                                    "EksportertDato": {
+                                        "type": "string",
+                                        "ablType": "DATE",
+                                        "default": null,
+                                        "title": "Eksportert",
+                                        "format": "date"
+                                    },
+                                    "pfFlagg": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 1,
+                                        "title": "Overført ProfitBase"
+                                    },
+                                    "Kampanje": {
+                                        "type": "boolean",
+                                        "ablType": "LOGICAL",
+                                        "default": false,
+                                        "title": "Kampanje"
+                                    },
+                                    "SkiftNr": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Skiftnr"
+                                    },
+                                    "Makulert": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Makulert"
+                                    },
+                                    "SkiftId": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "SkiftId"
+                                    },
+                                    "KOrdre_Id": {
+                                        "type": "number",
+                                        "ablType": "DECIMAL",
+                                        "default": 0,
+                                        "title": "KOrdre id"
+                                    },
+                                    "TTId": {
+                                        "type": "integer",
+                                        "ablType": "INTEGER",
+                                        "default": 0,
+                                        "title": "Transaksjonstype",
+                                        "required": true
+                                    },
+                                    "ttBongLinje": {
+                                        "type": "array",
+                                        "items": {"$ref": "#\/properties\/dsBongHode\/properties\/ttBongLinje"}
+                                    }
+                                }
+                            }
+                        },
+                        "ttBongLinje": {
+                            "type": "object",
+                            "additionalProperties": false,
+                            "properties": {
+                                "_id": {
+                                    "type": "string",
+                                    "semanticType": "Internal"
+                                },
+                                "_errorString": {
+                                    "type": "string",
+                                    "semanticType": "Internal"
+                                },
+                                "AaaaMmDd": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "ÅrMndDag"
+                                },
+                                "AlternativPrisRabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "AlternativPrisRabatt"
+                                },
+                                "Antall": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Antall"
+                                },
+                                "ArtikkelNr": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Artikkelnummer"
+                                },
+                                "BongNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Bongnummer"
+                                },
+                                "BongPris": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "BongPris"
+                                },
+                                "BongTekst": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Bongtekst"
+                                },
+                                "ButikkNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Butikknummer"
+                                },
+                                "b_id": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "BongId"
+                                },
+                                "Dato": {
+                                    "type": "string",
+                                    "ablType": "DATE",
+                                    "default": null,
+                                    "title": "Dato",
+                                    "format": "date"
+                                },
+                                "DivInfo": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "Felt for oppbevaring av infomrasjon som ikke skal inn i bongtekst.",
+                                    "title": "DivInfo"
+                                },
+                                "EAv": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Endret av"
+                                },
+                                "EDato": {
+                                    "type": "string",
+                                    "ablType": "DATE",
+                                    "default": null,
+                                    "title": "Endret dato",
+                                    "format": "date"
+                                },
+                                "ETid": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Endret tid"
+                                },
+                                "FeilKode": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Feilkode"
+                                },
+                                "FeilKodeTekst": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Feilkodetekst"
+                                },
+                                "ForKonvertering": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "ForKonvertering"
+                                },
+                                "GenerellRabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Generell rabatt"
+                                },
+                                "GruppeNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Gruppenummer"
+                                },
+                                "HovedGr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Hovedgruppe"
+                                },
+                                "HovedGrBeskrivelse": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Hovedgruppe"
+                                },
+                                "IndividNr": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Individnr"
+                                },
+                                "KampanjeId": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Kampanjeid"
+                                },
+                                "KampEierId": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Kampanjeeier"
+                                },
+                                "KampId": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Kampanjeid"
+                                },
+                                "KampTilbId": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Kampanjetilbud"
+                                },
+                                "KasseNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Kassenummer"
+                                },
+                                "Kunderabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Kunderabatt"
+                                },
+                                "LevNavn": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Leverandørnavn"
+                                },
+                                "LevNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Leverandørnummer"
+                                },
+                                "LinjeNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Linjenummer"
+                                },
+                                "LinjeRab": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Linjerabatt"
+                                },
+                                "LinjerabattPersonal": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "LinjerabattPersonal"
+                                },
+                                "LinjeSum": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Linjesum"
+                                },
+                                "LopeNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Løpenummer"
+                                },
+                                "Makulert": {
+                                    "type": "boolean",
+                                    "ablType": "LOGICAL",
+                                    "default": false,
+                                    "title": "Makulert"
+                                },
+                                "ManuelEndretPrisRabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "ManuelEndretPrisRabatt"
+                                },
+                                "MButikkNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Mottagende butikk"
+                                },
+                                "Medlemsrabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Medlemsrabatt"
+                                },
+                                "MixMatchRabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "MixMatchRabatt"
+                                },
+                                "Mva%": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "MVA%"
+                                },
+                                "MvaGr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Mva gruppe"
+                                },
+                                "MvaGruppeNavn": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Navn"
+                                },
+                                "MvaKr": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "MvaKr"
+                                },
+                                "Normalpris": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Normalpris"
+                                },
+                                "NotatKode": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Notatkode"
+                                },
+                                "NotatKodeTekst": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Notat"
+                                },
+                                "OAv": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Opprettet av"
+                                },
+                                "ODato": {
+                                    "type": "string",
+                                    "ablType": "DATE",
+                                    "default": null,
+                                    "title": "OpprettetDato",
+                                    "format": "date"
+                                },
+                                "OrgVareGr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Varegruppe"
+                                },
+                                "OriginalData": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "OriginalData"
+                                },
+                                "OTid": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Opprettet tid"
+                                },
+                                "Personalrabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Personalrabatt"
+                                },
+                                "PrisPrSalgsenhet": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Pris pr. salgsenhet"
+                                },
+                                "ProduktType": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 1,
+                                    "title": "Produkttype"
+                                },
+                                "RefNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "ReferanseNr"
+                                },
+                                "RefTekst": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Referansetekst"
+                                },
+                                "ReturButikk": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "ReturButikk"
+                                },
+                                "ReturKasserer": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "ReturKasserer"
+                                },
+                                "ReturKassererNavn": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "ReturKasserernavn"
+                                },
+                                "SalgsType": {
+                                    "type": "boolean",
+                                    "ablType": "LOGICAL",
+                                    "default": false,
+                                    "title": "Salgstype"
+                                },
+                                "SeqNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "SeqNr"
+                                },
+                                "SkiftNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Skiftnr"
+                                },
+                                "Storrelse": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Størrelse"
+                                },
+                                "Strekkode": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Strekkode"
+                                },
+                                "SubtotalRab": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Subtotalrabatt"
+                                },
+                                "SubtotalrabattPersonal": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "SubtotalrabattPersonal"
+                                },
+                                "TBId": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Transaksjonstype beskrivelse"
+                                },
+                                "Tilbudsrabatt": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "Tilbudsrabatt"
+                                },
+                                "TransDato": {
+                                    "type": "string",
+                                    "ablType": "DATE",
+                                    "default": null,
+                                    "title": "Transaksjonsdato",
+                                    "format": "date"
+                                },
+                                "TransNr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "TransNr"
+                                },
+                                "TransTid": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "TransaksjonsTid"
+                                },
+                                "TTId": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Transaksjonstype"
+                                },
+                                "Type": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Type"
+                                },
+                                "VareGr": {
+                                    "type": "integer",
+                                    "ablType": "INTEGER",
+                                    "default": 0,
+                                    "title": "Varegruppe"
+                                },
+                                "VareGruppeNavn": {
+                                    "type": "string",
+                                    "ablType": "CHARACTER",
+                                    "default": "",
+                                    "title": "Varegruppenavn"
+                                },
+                                "VVarekost": {
+                                    "type": "number",
+                                    "ablType": "DECIMAL",
+                                    "default": 0,
+                                    "title": "VVarekost"
+                                }
+                            }
+                        }
+                    }
+                }}
+            },
+            "relations": [{
+                "relationName": "drBong",
+                "parentName": "ttBongHode",
+                "childName": "ttBongLinje",
+                "relationFields": [{
+                    "parentFieldName": "b_id",
+                    "childFieldName": "b_id"
+                }]
+            }],
+            "operations": [
+                {
+                    "path": "?filter={filter}",
+                    "useBeforeImage": true,
+                    "type": "read",
+                    "verb": "get",
+                    "params": [
+                        {
+                            "name": "filter",
+                            "type": "QUERY"
+                        },
+                        {
+                            "name": "dsBongHode",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "create",
+                    "verb": "post",
+                    "params": [
+                        {
+                            "name": "dsBongHode",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsBongHode",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "delete",
+                    "verb": "delete",
+                    "params": [
+                        {
+                            "name": "dsBongHode",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsBongHode",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                },
+                {
+                    "path": "",
+                    "useBeforeImage": true,
+                    "type": "update",
+                    "verb": "put",
+                    "params": [
+                        {
+                            "name": "dsBongHode",
+                            "type": "REQUEST_BODY"
+                        },
+                        {
+                            "name": "dsBongHode",
+                            "type": "RESPONSE_BODY"
+                        }
+                    ]
+                }
+            ]
+        }]
+    }]
+}

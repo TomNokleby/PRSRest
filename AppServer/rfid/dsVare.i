@@ -18,5 +18,5 @@
   /** Dynamically generated schema file **/
    
 DEFINE DATASET dsVare SERIALIZE-NAME 'dsVare' FOR ttVare, ttVarePris
-  DATA-RELATION drVare FOR ttVare, ttVarePris RELATION-FIELDS (seq, seq) NESTED
+  DATA-RELATION drVare FOR ttVare, ttVarePris RELATION-FIELDS (Kode, Kode) NESTED
   .

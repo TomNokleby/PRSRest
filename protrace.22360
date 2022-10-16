@@ -1,0 +1,91 @@
+=====================================================
+PROGRESS stack trace as of Sat Jun 18 10:10:44 2022
+=====================================================
+
+Progress OpenEdge Release 11.7 build 1685 SP04 on WINNT 
+
+Startup parameters:
+-pf C:\Progress\OpenEdge\startup.pf,-cpinternal ISO8859-1,-cpstream ISO8859-1,-cpcoll Norwegian,-cpcase Basic,-d dmy,-numsep 44,-numdec 46,(end .pf),-wy,-nosplash,-debugalert,-inp 16000,-tok 4000,-rereadnolock,-s 200,-mmax 65534,-h 20,-T C:/OpenEdge/WRK,-assemblies C:\NSoft\JukeBox\assemblies,-p C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_server.p
+
+Exception code: C0000005 ACCESS_VIOLATION
+Fault address:  00007FF98163B082 01:000000000015A082 C:\Progress\OpenEdge\bin\prow.dll
+
+Registers:
+RAX:0000000000000000
+RBX:0000023FEE6BE088
+RCX:0000023FEE598D10
+RDX:0000000000000402
+RSI:0000000000000000
+RDI:0000023FEE6C0098
+R8 :0000023FEE6BE060
+R9 :0000000000000001
+R10:0000023FEE6BE078
+R11:0000004B35B9C950
+R12:0000023FEE6BE1E8
+R13:0000023FE9A8C250
+R14:0000000000000000
+R15:0000000000000000
+CS:RIP:0033:00007FF98163B082
+SS:RSP:002B:0000004B35B9C8F0  RBP:00000000FFFFFFFF
+DS:002B  ES:002B  FS:0053  GS:002B
+Flags:00010246
+
+
+Debugging dll: C:\Progress\OpenEdge\bin\DBGHELP.DLL
+Symbol Path:
+ C:\Progress\OpenEdge\bin;C:\Progress\OpenEdge\pdbfiles
+
+
+Call Stack:
+Address           Frame
+00007FF98163B082  0000004B35B9C970  ProStartup+239B2
+00007FF98163C2DE  0000004B35B9CA20  ProStartup+24C0E
+00007FF9819BDE67  0000004B35B9D450  sm_oearchPrepro+2107
+00007FF9818A47D4  0000004B35B9D560  dbut_utfIsLink+57214
+00007FF9818A61D3  0000004B35B9DC20  dbut_utfIsLink+58C13
+00007FF9818A6BA2  0000004B35B9DD10  dbut_utfIsLink+595E2
+00007FF981923C9A  0000004B35B9DD40  dbut_utfIsLink+D66DA
+00007FF9818A7031  0000004B35B9DD80  dbut_utfIsLink+59A71
+00007FF98188C086  0000004B35B9E060  dbut_utfIsLink+3EAC6
+00007FF981918CA5  0000004B35B9E110  dbut_utfIsLink+CB6E5
+00007FF981923C9A  0000004B35B9E140  dbut_utfIsLink+D66DA
+00007FF9817382F7  0000004B35B9E1E0  ProStartup+120C27
+00007FF981BAE6AC  0000004B35B9E2C0  rcUpgradeRecord+DB99C
+00007FF981BB87B1  0000004B35B9E2F0  rcUpgradeRecord+E5AA1
+00007FF981C934B2  0000004B35B9E350  Progress::ClrBridge::rnProFromClr::runEventDispatcher+12
+00007FF992DA7DCD  0000004B35B9E358  0000:0000000000000000 
+0000000000000001  0000004B35B9E360  0000:0000000000000000 
+00007FF9C0000005  0000004B35B9E368  0000:0000000000000000 
+0000004B35B9B678  0000004B35B9E370  0000:0000000000000000 
+
+
+** ABL Stack Trace **
+
+--> C:\NSoft\Polygon\.metadata\.plugins\com.openedge.pdt.project\/PRSRest/PRSRest/../compile_tmp_3167204.p at line 6  (C:\NSoft\Polygon\.metadata\.plugins\com.openedge.pdt.project\\PRSRest\PRSRest\..\compile_tmp_3167204.p)
+    C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_idecompile.p at line 139  (C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_idecompile.p)
+    executeCmd C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_server.p at line 265  (C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_server.p)
+    ReceiveCommand C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_socketclient.p at line 497  (C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_socketclient.p)
+    C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_server.p at line 174  (C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_server.p)
+
+** Persistent procedures/Classes **
+
+Handle  File Name
+001009  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_serverdefault.p
+001008  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.ve_11.7.4.00\runtime\_ideveruntime.p
+001007  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.text_11.7.4.00\runtime\_idetxtruntime.p
+001006  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_idewsruntime.p
+001005  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_idedbruntime.p
+001004  c:\progress\openedge\oeide\eclipse\plugins\com.openedge.pdt.oestudio_11.7.4.00\runtime\_abruntime.p
+001002  C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_socketclient.p
+001000  C:\Progress\OpenEdge\oeide\eclipse\plugins\com.openedge.pdt.project_11.7.4.00\runtime\_oeidecontext.p
+
+** PROPATH **
+C:\NSoft\Polygon\PRSRest\AppServer,C:\NSoft\Polygon\PRS,C:\NSoft\Polygon\PRS\win,C:\NSoft\JukeBox\oo,C:\NSoft\JukeBox\img,C:\NSoft\JukeBox\server,C:\NSoft\JukeBox\lib,C:\NSoft\JukeBox\obj,C:\NSoft\JukeBox\winsrc,C:\NSoft\JukeBox\winsrc\admin,C:\NSoft\JukeBox\server\samples,C:\NSoft\JukeBox\winsrc\samples,C:\NSoft\JukeBox\winsrc\samples\oo,C:\NSoft\JukeBox\Tools\11.7,C:\NSoft\JukeBox\Tools,C:\NSoft\Polygon\PRSRest\PASOEContent\WEB-INF\openedge,C:\NSoft\Polygon\PRSRest,C:\Progress\OpenEdge\gui\,C:\Progress\OpenEdge\gui\adecomm.pl,C:\Progress\OpenEdge\gui\adecomp.pl,C:\Progress\OpenEdge\gui\adedict.pl,C:\Progress\OpenEdge\gui\adeedit.pl,C:\Progress\OpenEdge\gui\adeicon.pl,C:\Progress\OpenEdge\gui\adeshar.pl,C:\Progress\OpenEdge\gui\adeuib.pl,C:\Progress\OpenEdge\gui\adeweb.pl,C:\Progress\OpenEdge\gui\adexml.pl,C:\Progress\OpenEdge\gui\dataadmin.pl,C:\Progress\OpenEdge\gui\prodict.pl,C:\Progress\OpenEdge\gui\protools.pl,C:\Progress\OpenEdge\gui\OpenEdge.Core.pl,C:\Progress\OpenEdge\gui\OpenEdge.BusinessLogic.pl,C:\Progress\OpenEdge\gui\netlib\OpenEdge.Net.pl,C:\Progress\OpenEdge,C:\Progress\OpenEdge\bin,C:\Progress\OpenEdge\tty,C:\Progress\OpenEdge\gui,C:\Progress\OpenEdge\gui\ablunit.pl,C:\Progress\OpenEdge\gui\adedesk.pl,C:\Progress\OpenEdge\gui\aderes.pl,C:\Progress\OpenEdge\gui\OpenEdge.ServerAdmin.pl
+
+** Databases (logical/type/physical) **
+   Vpi                 PROGRESS  vpi
+   Wr                  PROGRESS  wr
+   Data                PROGRESS  data
+   skotex              PROGRESS  skotex
+
+** End of Protrace **

@@ -12,8 +12,6 @@
 @progress.service.resource FILE(name="VareOgLager", URI="/VareOgLager", schemaName="ttVareLager", schemaFile="PRSRest/AppServer/rfid/ttVareLager.i").
 
 USING Progress.Lang.*.
-USING OpenEdge.BusinessLogic.BusinessEntity.
-USING Progress.Json.ObjectModel.*.
 
 BLOCK-LEVEL ON ERROR UNDO, THROW.
 
@@ -22,20 +20,14 @@ CLASS rfid.VareOgLager:
             Purpose:                                                                      
             Notes:                                                                        
     ------------------------------------------------------------------------------*/
-
-    {"rfid\ttVare.i"}
-    {"rfid\dsVare.i"}
     
     {"rfid\ttVareOgLager.i"}
-
-    DEFINE DATA-SOURCE srcVare FOR StrekKode.
         
     DEFINE VARIABLE ihBuffer1 AS HANDLE NO-UNDO.
     DEFINE VARIABLE ihBuffer2 AS HANDLE NO-UNDO.
     DEFINE VARIABLE ihBuffer3 AS HANDLE NO-UNDO.
     DEFINE VARIABLE ihBuffer4 AS HANDLE NO-UNDO.
     DEFINE VARIABLE hQuery AS HANDLE NO-UNDO.
-    DEFINE VARIABLE iSeq AS INTEGER NO-UNDO.  
         
     /*------------------------------------------------------------------------------
             Purpose:  Get one or more records, based on a filter string                                                                     
@@ -47,224 +39,93 @@ CLASS rfid.VareOgLager:
             INPUT filter AS CHARACTER, 
             OUTPUT TABLE ttVareLager):
 
-        MESSAGE 'Filterverd ReadVare: ' + filter.
+        DEFINE VARIABLE pcWhere AS CHARACTER.
+        DEFINE VARIABLE pcKode AS CHARACTER NO-UNDO.
+        DEFINE VARIABLE pcButNr AS CHARACTER NO-UNDO.
+
+        EMPTY TEMP-TABLE ttVareLager.
         
-        IF filter BEGINS "~{" THEN
-            THIS-OBJECT:JFPFillMethod (INPUT filter).
-            
-        ELSE 
+        ihBuffer1 = BUFFER Strekkode:HANDLE.    
+        ihBuffer2 = BUFFER ArtLag:HANDLE.
+        ihBuffer3 = BUFFER Lager:HANDLE.    
+        ihBuffer4 = BUFFER StrKonv:HANDLE.
+        
+        filter = TRIM(filter,'"').
+        
+        MESSAGE 'Filter fra VareOgfilter: ' filter.
+        
+        pcWhere = "FOR EACH Strekkode WHERE Kode = '&Ean',
+                   first StrKonv OF StrekKode no-lock,
+                   FIRST ArtLag WHERE ArtLag.ArtikkelNr = StrekKode.ArtikkelNr AND ArtLag.butik = '&ButNr' AND ArtLag.storl = StrKonv.Storl,
+                   FIRST Lager WHERE Lager.ArtikkelNr = StrekKode.ArtikkelNr AND Lager.Butik = ArtLag.butik".     
+
+        IF NUM-ENTRIES(filter) = 2 THEN 
         DO:
-            BUFFER ttVare:HANDLE:BATCH-SIZE = 0.
-            BUFFER ttVare:SET-CALLBACK ("AFTER-ROW-FILL", "AddIdField").
-            SUPER:ReadData(filter).
-        END.    
-        
-        FOR EACH ttVare:
-            supplerInfoVare( INPUT ttVare.Kode ).
+            ASSIGN
+                pcKode  = REPLACE(ENTRY(1,Filter),'Kode=','')
+                pcButNr = REPLACE(ENTRY(2,filter),'ButNr=','') 
+                pcWhere = REPLACE(pcWhere,'&Ean',pcKode)
+                pcWhere = REPLACE(pcWhere,'&ButNr',pcButNr)
+                .
         END.
-
-
-/*        DEFINE VARIABLE pcWhere AS CHARACTER.                                                                                               */
-/*        DEFINE VARIABLE pcKode AS CHARACTER NO-UNDO.                                                                                        */
-/*        DEFINE VARIABLE pcButNr AS CHARACTER NO-UNDO.                                                                                       */
-/*                                                                                                                                            */
-/*        EMPTY TEMP-TABLE ttVareLager.                                                                                                       */
-/*                                                                                                                                            */
-/*        ihBuffer1 = BUFFER Strekkode:HANDLE.                                                                                                */
-/*        ihBuffer2 = BUFFER ArtLag:HANDLE.                                                                                                   */
-/*        ihBuffer3 = BUFFER Lager:HANDLE.                                                                                                    */
-/*        ihBuffer4 = BUFFER StrKonv:HANDLE.                                                                                                  */
-/*                                                                                                                                            */
-/*        filter = TRIM(filter,'"').                                                                                                          */
-/*                                                                                                                                            */
-/*        MESSAGE 'Filter fra VareOgfilter: ' filter.                                                                                         */
-/*                                                                                                                                            */
-/*        pcWhere = "FOR EACH Strekkode WHERE Kode = '&Ean',                                                                                  */
-/*                   first StrKonv OF StrekKode no-lock,                                                                                      */
-/*                   FIRST ArtLag WHERE ArtLag.ArtikkelNr = StrekKode.ArtikkelNr AND ArtLag.butik = '&ButNr' AND ArtLag.storl = StrKonv.Storl,*/
-/*                   FIRST Lager WHERE Lager.ArtikkelNr = StrekKode.ArtikkelNr AND Lager.Butik = ArtLag.butik".                               */
-/*                                                                                                                                            */
-/*        IF filter BEGINS "~{" THEN                                                                                                          */
-/*            THIS-OBJECT:JFPFillMethod (INPUT filter).                                                                                       */
-/*        ELSE DO:                                                                                                                            */
-/*                                                                                                                                            */
-/*          IF NUM-ENTRIES(filter,'=') = 2 THEN                                                                                               */
-/*          DO:                                                                                                                               */
-/*              ASSIGN                                                                                                                        */
-/*                  pcKode  = REPLACE(ENTRY(1,Filter),'Kode=','')                                                                             */
-/*                  pcButNr = REPLACE(ENTRY(2,filter),'ButNr=','')                                                                            */
-/*                  pcWhere = REPLACE(pcWhere,'&Ean',pcKode)                                                                                  */
-/*                  pcWhere = REPLACE(pcWhere,'&ButNr',pcButNr)                                                                               */
-/*                  .                                                                                                                         */
-/*          END.                                                                                                                              */
-/*        END.                                                                                                                                */
-/*                                                                                                                                            */
-/*        MESSAGE 'Where sats: ' + pcWhere.                                                                                                   */
-/*                                                                                                                                            */
-/*        /* TODO: Add code to get a set of records and return the                                                                            */
-/*           resulting records to the client. */                                                                                              */
-/*        CREATE QUERY hQuery.                                                                                                                */
-/*        hQuery:SET-BUFFERS(ihBuffer1,ihBuffer4,ihBuffer2,ihBuffer3).                                                                        */
-/*        hQuery:QUERY-PREPARE(pcWhere).                                                                                                      */
-/*        hQuery:QUERY-OPEN().                                                                                                                */
-/*        hQuery:GET-FIRST().                                                                                                                 */
-/*                                                                                                                                            */
-/*        LOOPEN:                                                                                                                             */
-/*        REPEAT WHILE NOT hQuery:QUERY-OFF-END:                                                                                              */
-/*            FIND StrekKode NO-LOCK WHERE                                                                                                    */
-/*                StrekKode.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE NO-ERROR.                                                      */
-/*            FIND Butiker NO-LOCK WHERE                                                                                                      */
-/*                Butiker.Butik = Lager.Butik NO-ERROR.                                                                                       */
-/*            FIND ArtBas NO-LOCK WHERE                                                                                                       */
-/*                ArtBas.ArtikkelNr = ihBuffer1:BUFFER-FIELD("ArtikkelNr"):BUFFER-VALUE NO-ERROR.                                             */
-/*            FIND FIRST ArtPris OF ArtBas NO-LOCK WHERE                                                                                      */
-/*                ArtPris.ProfilNr = Butiker.ProfilNr NO-ERROR.                                                                               */
-/*            IF NOT AVAILABLE ArtPris THEN                                                                                                   */
-/*                FIND FIRST artPris OF ArtBas NO-LOCK NO-ERROR.                                                                              */
-/*            FIND StrKonv OF StrekKode NO-LOCK NO-ERROR.                                                                                     */
-/*            FIND LevBas OF ArtBas NO-LOCK NO-ERROR.                                                                                         */
-/*                                                                                                                                            */
-/*            IF NOT CAN-FIND(FIRST ttVareLager WHERE                                                                                         */
-/*                            ttVareLager.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE) THEN                                            */
-/*            DO:                                                                                                                             */
-/*                CREATE ttVareLager.                                                                                                         */
-/*                ASSIGN                                                                                                                      */
-/*                    ttVareLager.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE                                                          */
-/*                    ttVareLager.ArtikkelNr = ihBuffer2:BUFFER-FIELD("ArtikkelNr"):BUFFER-VALUE                                              */
-/*                    ttVareLager.ButikkNr = ihBuffer2:BUFFER-FIELD("Butik"):BUFFER-VALUE                                                     */
-/*                    ttVareLager.Beskr = IF AVAILABLE ArtBas THEN ArtBas.Beskr ELSE ''                                                       */
-/*                    ttVareLager.LevKod = IF AVAILABLE ArtBas THEN ArtBas.LevKod ELSE ''                                                     */
-/*                    ttVareLager.LevFargKod = IF AVAILABLE ArtBas THEN ArtBas.LevFargKod ELSE ''                                             */
-/*                    ttVareLager.VmId = IF AVAILABLE ArtBas THEN ArtBas.VmId ELSE 0                                                          */
-/*                    ttVareLager.VmBeskr = IF AVAILABLE Varemerke THEN Varemerke.Beskrivelse ELSE ''                                         */
-/*                    ttVareLager.StrKode = ihBuffer1:BUFFER-FIELD("StrKode"):BUFFER-VALUE                                                    */
-/*                    ttVareLager.Sasong = IF AVAILABLE ArtBas THEN ArtBas.Sasong ELSE 0                                                      */
-/*                    ttVareLager.LevNr = IF AVAILABLE ArtBas THEN ArtBas.LevNr ELSE 0                                                        */
-/*                    ttVareLager.LagAnt = ihBuffer2:BUFFER-FIELD("LagAnt"):BUFFER-VALUE                                                      */
-/*                    ttVareLager.vVarekost = ihBuffer3:BUFFER-FIELD("vVareKost"):BUFFER-VALUE                                                */
-/*                    ttVareLager.EDato = ihBuffer3:BUFFER-FIELD("EDato"):BUFFER-VALUE                                                        */
-/*                    ttVareLager.Storl = IF AVAILABLE StrKonv THEN StrKonv.Storl ELSE ''                                                     */
-/*                    ttVareLager.SasBeskr = IF AVAILABLE SaSong THEN SaSong.SasBeskr ELSE ''                                                 */
-/*                    ttVareLager.LevBeskr = IF AVAILABLE LevBas THEN LevBas.levnamn ELSE ''                                                  */
-/*                    ttVareLager.Pris = IF AVAILABLE ArtPris THEN ArtPris.Pris[1] ELSE 0                                                     */
-/*                    ttVareLager.InnkjopsPris = IF AVAILABLE ArtPris THEN ArtPris.InnkjopsPris[1] ELSE 0                                     */
-/*                    ttVareLager.Varekost = IF AVAILABLE ArtPris THEN ArtPris.VareKost[1] ELSE 0                                             */
-/*                .                                                                                                                           */
-/*            END.                                                                                                                            */
-/*                                                                                                                                            */
-/*            hQuery:GET-NEXT().                                                                                                              */
-/*        END. /* LOOPEN */                                                                                                                   */
+        ELSE RETURN.
+             
+        MESSAGE 'Where sats: ' + pcWhere.
+             
+        /* TODO: Add code to get a set of records and return the
+           resulting records to the client. */   
+        CREATE QUERY hQuery.
+        hQuery:SET-BUFFERS(ihBuffer1,ihBuffer4,ihBuffer2,ihBuffer3).
+        hQuery:QUERY-PREPARE(pcWhere).
+        hQuery:QUERY-OPEN().
+        hQuery:GET-FIRST().
            
-    END METHOD.
-
-  /*------------------------------------------------------------------------------
-   Purpose:
-   Notes:
-  ------------------------------------------------------------------------------*/
-
-  METHOD PUBLIC VOID JFPFillMethod( INPUT filter AS CHARACTER ):
-        DEFINE VARIABLE jsonParser     AS ObjectModelParser NO-UNDO.
-        DEFINE VARIABLE jsonObject     AS JsonObject        NO-UNDO.
-        DEFINE VARIABLE cWhere         AS CHARACTER         NO-UNDO.
-        DEFINE VARIABLE hQuery         AS HANDLE            NO-UNDO.
-        DEFINE VARIABLE lUseReposition AS LOGICAL           NO-UNDO.
-        DEFINE VARIABLE iCount         AS INTEGER           NO-UNDO.
-        DEFINE VARIABLE ablFilter      AS CHARACTER         NO-UNDO.
-        DEFINE VARIABLE id             AS CHARACTER         INITIAL ? NO-UNDO.
-        DEFINE VARIABLE iMaxRows       AS INTEGER           INITIAL ? NO-UNDO.
-        DEFINE VARIABLE iSkipRows      AS INTEGER           INITIAL ? NO-UNDO.
-        DEFINE VARIABLE cOrderBy       AS CHARACTER         INITIAL "" NO-UNDO.
-
-        /* purge any existing data */
-        EMPTY TEMP-TABLE ttVare.
-
-        jsonParser = NEW ObjectModelParser().
-        
-        jsonObject = CAST(jsonParser:Parse(filter), jsonObject).
-        
-        iMaxRows = jsonObject:GetInteger("top") NO-ERROR.
-        iSkipRows = jsonObject:GetInteger("skip") NO-ERROR.
-        ablFilter = jsonObject:GetCharacter("ablFilter") NO-ERROR.
-        id = jsonObject:GetCharacter("id") NO-ERROR.
-        
-        cOrderBy = jsonObject:GetCharacter("orderBy") NO-ERROR.
-        
-        cWhere = "WHERE " + ablFilter NO-ERROR.
-        IF cOrderBy > "" THEN
-        ORDERBYBLOKK: 
-        DO:
-            cOrderBy = REPLACE(cOrderBy, ",", " by ").
-            cOrderBy = "by " + cOrderBy + " ".
-        
-            /* NOTE: id and seq fields should be removed from
-            cWhere and cOrderBy */
-            cOrderBy = REPLACE(cOrderBy, "by id desc", "").
-            cOrderBy = REPLACE(cOrderBy, "by id ", "").
-            cOrderBy = REPLACE(cOrderBy, "by seq desc", "").
-            cOrderBy = REPLACE(cOrderBy, "by seq ", "").
-        END. /* ORDERBYBLOKK */
-        lUseReposition = iSkipRows <> ?.
-        IF iMaxRows <> ? AND iMaxRows > 0 THEN 
-        DO:
-            BUFFER ttVare:HANDLE:BATCH-SIZE = iMaxRows.
-        END.
-        ELSE 
-        DO:
-            IF id > "" THEN
-                BUFFER ttVare:HANDLE:BATCH-SIZE = 1.
-            ELSE
-                BUFFER ttVare:HANDLE:BATCH-SIZE = 0.
-        END.
-        
-        BUFFER ttVare:ATTACH-DATA-SOURCE(DATA-SOURCE srcVare:HANDLE).
-        IF cOrderBy = ? THEN cOrderBy = "".
-        cWhere = IF cWhere > "" THEN (cWhere + " " + cOrderBy)
-        ELSE ("WHERE " + cOrderBy).
-        
-        DATA-SOURCE srcVare:FILL-WHERE-STRING = cWhere.
-        
-        IF lUseReposition THEN 
-        DO:
-            hQuery = DATA-SOURCE srcVare:QUERY.
-            hQuery:QUERY-OPEN.    
-            IF id > "" AND id <> "?" THEN 
+        LOOPEN:
+        REPEAT WHILE NOT hQuery:QUERY-OFF-END: 
+            FIND StrekKode NO-LOCK WHERE 
+                StrekKode.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE NO-ERROR.
+            FIND Butiker NO-LOCK WHERE 
+                Butiker.Butik = Lager.Butik NO-ERROR.
+            FIND ArtBas NO-LOCK WHERE 
+                ArtBas.ArtikkelNr = ihBuffer1:BUFFER-FIELD("ArtikkelNr"):BUFFER-VALUE NO-ERROR.
+            FIND FIRST ArtPris OF ArtBas NO-LOCK WHERE 
+                ArtPris.ProfilNr = Butiker.ProfilNr NO-ERROR.
+            IF NOT AVAILABLE ArtPris THEN  
+                FIND FIRST artPris OF ArtBas NO-LOCK NO-ERROR.
+            FIND StrKonv OF StrekKode NO-LOCK NO-ERROR. 
+            FIND LevBas OF ArtBas NO-LOCK NO-ERROR.
+            
+            IF NOT CAN-FIND(FIRST ttVareLager WHERE 
+                            ttVareLager.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE) THEN 
             DO:
-                hQuery:REPOSITION-TO-ROWID(TO-ROWID(id)).
+                CREATE ttVareLager.
+                ASSIGN 
+                    ttVareLager.Kode = ihBuffer1:BUFFER-FIELD("Kode"):BUFFER-VALUE
+                    ttVareLager.ArtikkelNr = ihBuffer2:BUFFER-FIELD("ArtikkelNr"):BUFFER-VALUE
+                    ttVareLager.ButikkNr = ihBuffer2:BUFFER-FIELD("Butik"):BUFFER-VALUE
+                    ttVareLager.Beskr = IF AVAILABLE ArtBas THEN ArtBas.Beskr ELSE ''
+                    ttVareLager.LevKod = IF AVAILABLE ArtBas THEN ArtBas.LevKod ELSE ''
+                    ttVareLager.LevFargKod = IF AVAILABLE ArtBas THEN ArtBas.LevFargKod ELSE ''
+                    ttVareLager.VmId = IF AVAILABLE ArtBas THEN ArtBas.VmId ELSE 0
+                    ttVareLager.VmBeskr = IF AVAILABLE Varemerke THEN Varemerke.Beskrivelse ELSE ''
+                    ttVareLager.StrKode = ihBuffer1:BUFFER-FIELD("StrKode"):BUFFER-VALUE
+                    ttVareLager.Sasong = IF AVAILABLE ArtBas THEN ArtBas.Sasong ELSE 0
+                    ttVareLager.LevNr = IF AVAILABLE ArtBas THEN ArtBas.LevNr ELSE 0
+                    ttVareLager.LagAnt = ihBuffer2:BUFFER-FIELD("LagAnt"):BUFFER-VALUE
+                    ttVareLager.vVarekost = ihBuffer3:BUFFER-FIELD("vVareKost"):BUFFER-VALUE
+                    ttVareLager.EDato = ihBuffer3:BUFFER-FIELD("EDato"):BUFFER-VALUE
+                    ttVareLager.Storl = IF AVAILABLE StrKonv THEN StrKonv.Storl ELSE ''
+                    ttVareLager.SasBeskr = IF AVAILABLE SaSong THEN SaSong.SasBeskr ELSE ''
+                    ttVareLager.LevBeskr = IF AVAILABLE LevBas THEN LevBas.levnamn ELSE '' 
+                    ttVareLager.Pris = IF AVAILABLE ArtPris THEN ArtPris.Pris[1] ELSE 0
+                    ttVareLager.InnkjopsPris = IF AVAILABLE ArtPris THEN ArtPris.InnkjopsPris[1] ELSE 0
+                    ttVareLager.Varekost = IF AVAILABLE ArtPris THEN ArtPris.VareKost[1] ELSE 0
+                .
             END.
-            ELSE IF iSkipRows <> ? AND iSkipRows > 0 THEN 
-                DO:
-                    hQuery:REPOSITION-TO-ROW(iSkipRows).
-                    IF NOT AVAILABLE Strekkode THEN
-                        hQuery:GET-NEXT() NO-ERROR.
-                END.
-            iCount = 0.
-            REPEAT WHILE NOT hQuery:QUERY-OFF-END AND iCount < iMaxRows:
-                hQuery:GET-NEXT () NO-ERROR.
-                IF AVAILABLE Strekkode THEN 
-                DO:
-                    CREATE ttVare.
-                    BUFFER-COPY Strekkode TO ttVare.
-                    ASSIGN 
-                        ttVare.id  = STRING(ROWID(Strekkode))
-                        iSeq     = iSeq + 1
-                        ttVare.seq = iSeq.
-                END.
-                iCount = iCount + 1.
-            END.
-        END.
-        ELSE 
-        DO:
-            IF id > "" THEN DATA-SOURCE srcVare:RESTART-ROWID(1)
-                = TO-ROWID ((id)).
-            BUFFER ttVare:SET-CALLBACK ("AFTER-ROW-FILL", "AddIdField").
-            DATASET dsVare:FILL().
-        END.
-        FINALLY:
-            BUFFER ttVare:DETACH-DATA-SOURCE().
-        END FINALLY.
-  END METHOD.    
-    
-    
-     
-    
+            
+            hQuery:GET-NEXT(). 
+        END. /* LOOPEN */      
+        hQuery:QUERY-CLOSE().
+        DELETE OBJECT hQuery.   
+    END METHOD.
 END CLASS.

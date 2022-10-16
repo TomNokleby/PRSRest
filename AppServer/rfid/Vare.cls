@@ -127,6 +127,8 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     qh:QUERY-PREPARE("PRESELECT EACH Prod " + cWhere).
     qh:QUERY-OPEN ().
     numRecs = qh:NUM-RESULTS.
+    qh:QUERY-CLOSE ().
+    DELETE OBJECT qh. 
   END METHOD.  
 
   /*------------------------------------------------------------------------------
@@ -166,6 +168,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
 
     /* purge any existing data */
     EMPTY TEMP-TABLE ttVare.
+    EMPTY TEMP-TABLE ttVArePris.
 
     jsonParser = NEW ObjectModelParser().
         
@@ -244,6 +247,8 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         END.
         iCount = iCount + 1.
       END.
+      hQuery:QUERY-CLOSE().
+      DELETE OBJECT hQuery.
     END.
     ELSE 
     DO:
@@ -276,6 +281,9 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     Filterverd ReadVare: {"ablFilter":"eDato >='02/06/2022'"}
     */
         
+    EMPTY TEMP-TABLE ttVare.
+    EMPTY TEMP-TABLE ttVarePris.
+    
     IF filter BEGINS "~{" THEN
       THIS-OBJECT:JFPFillMethod (INPUT filter).
             
@@ -287,13 +295,9 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     END.    
 
     MESSAGE 'Filterverdi - renset ReadVare:' cablFilter.
-                
-    /* Legger på ekstra informasjon på vare recordden */
-    FOR EACH ttVare:
-      supplerInfoVare( INPUT ttVare.Kode ).
-    END.
 
     /* Er eDato angitt i filteret, skal det gjøres utvidet søk mot ArtPris. */
+    dEDato = ?.
     IF cablFilter MATCHES '*eDato*' THEN 
     DO:
       /* eDato >='02/06/2022' */
@@ -304,9 +308,20 @@ CLASS rfid.Vare INHERITS BusinessEntity:
       ELSE 3 /* <= */
         ).
       dEDato = DATE(ENTRY(2,cablFilter,'=')).
+      MESSAGE '  cablFilter:' cablFilter ' dEDato:' dEDato ' iOperator:' iOperator.
+    END.
+                
+    /* Legger på ekstra informasjon på vare recordden */
+    FOR EACH ttVare:
+      MESSAGE '  Vare:' ttVare.Kode ttVare.Beskr ttVare.EDato.
+      supplerInfoVare( INPUT ttVare.Kode ).
+    END.
+
+    /* Er eDato angitt i filteret, skal det gjøres utvidet søk mot ArtPris. */
+    IF cablFilter MATCHES '*eDato*' THEN 
+    DO:
       supplerPris (dEDato, iOperator). 
       supplerVare (dEDato, iOperator).
-      MESSAGE 'Filterverdi - eDato:' STRING(dEDato) 'Operator:' STRING(iOperator).
     END.
         
               
@@ -321,9 +336,14 @@ CLASS rfid.Vare INHERITS BusinessEntity:
     DEFINE VARIABLE pdDato AS DATE NO-UNDO.             
         
     DEFINE BUFFER bufButiker FOR butiker.    
+
+    MESSAGE '    supplerInfoVare HENTER:' ttVare.Kode ttVare.Beskr.  
         
     /* Legg inn kode her for å berike temp tabellen. */
-    FIND ArtBas OF ttVare NO-LOCK NO-ERROR.
+    FIND Strekkode NO-LOCK WHERE 
+      Strekkode.Kode = ttVare.Kode NO-ERROR.
+    IF AVAILABLE StrekKode THEN 
+      FIND ArtBas OF Strekkode NO-LOCK NO-ERROR.
     IF AVAILABLE ArtBas THEN
     ARTBAS_FUNNET: 
     DO:
@@ -336,7 +356,8 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         ttVare.Farg       = ArtBas.Farg
         ttVare.Sasong     = ArtBas.Sasong
         ttVare.LevNr      = ArtBas.LevNr
-        ttVare.NOS        = (IF ArtBas.Lagerkoder MATCHES '*NOS*' THEN 'NOS' ELSE '')              
+        ttVare.NOS        = (IF ArtBas.Lagerkoder MATCHES '*NOS*' THEN 'NOS' ELSE '')
+        ttVare.eDato      = ArtBas.eDato  
         .
 
       FIND ArtPris NO-LOCK WHERE
@@ -346,49 +367,61 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         FIND ArtPris NO-LOCK WHERE
           ArtPris.ArtikkelNr = ttVare.ArtikkelNr AND  
           ArtPris.ProfilNr = 1 NO-ERROR.
-      IF AVAILABLE ArtPris THEN 
+      IF AVAILABLE ArtPris THEN
       DO:
         ASSIGN
           ttVare.Pris           = ArtPris.Pris[1]
           ttVare.InnkjopsPris   = ArtPris.InnkjopsPris[1]
           ttVare.Varekost       = ArtPris.VareKost[1]
-          ttVare.Pris           = IF ttVare.Pris = ? THEN 0 ELSE ttVare.Pris                 
-          ttVare.InnkjopsPris   = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris                 
-          ttVare.VareKost       = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost   
+          ttVare.Pris           = IF ttVare.Pris = ? THEN 0 ELSE ttVare.Pris
+          ttVare.InnkjopsPris   = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris
+          ttVare.VareKost       = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost
           ttVare.ProfilNr       = ArtPris.ProfilNr
           ttVare.TilbPris       = ArtPris.Pris[2]
           ttVare.Mva%           = ArtPris.Mva%[1]
           ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
-          ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?  
+          ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
           .
-        FOR EACH bufButiker NO-LOCK WHERE 
-          bufButiker.ApningsDato <= TODAY AND 
-          bufButiker.harButikkSystem = TRUE AND 
-          bufButiker.NedlagtDato = ? AND 
-          bufButiker.Butik <= 9999:
-          IF CAN-DO('848,849',STRING(bufButiker.Butik)) THEN 
-            NEXT.
-          CREATE ttVarePris.
-          ASSIGN
-            ttVarePris.Seq            = ttVare.Seq
-            ttVarePris.Kode           = ttVare.Kode
-            ttVarePris.ProfilNr       = ArtPris.ProfilNr
-            ttVarePris.Pris           = ArtPris.Pris[1]
-            ttVarePris.ButikkNr       = bufButiker.Butik
-            ttVarePris.InnkjopsPris   = ArtPris.InnkjopsPris[1]
-            ttVarePris.Varekost       = ArtPris.VareKost[1]
-            ttVarePris.Pris           = IF ttVarePris.Pris = ? THEN 0 ELSE ttVarePris.Pris                 
-            ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
-            ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
-            ttVarePris.Mva%           = ArtPris.Mva%[1]
-            ttVarePris.TilbPris       = ArtPris.Pris[2]
-            ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
-            ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
-            ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
-            ttVarePris.EDato          = ArtPris.EDato 
-            .
-        END.  
-      END.  
+        /* TN 1/10-22 Hvis det avgrenses på dato, skal ikke pris pr. butikk legges ut. */
+        IF dEDato = ? THEN 
+        DO:
+          FOR EACH bufButiker NO-LOCK WHERE
+            bufButiker.ApningsDato <= TODAY AND
+            bufButiker.harButikkSystem = TRUE AND
+            bufButiker.NedlagtDato = ? AND
+            bufButiker.Butik <= 9999:
+            IF CAN-DO('848,849',STRING(bufButiker.Butik)) THEN
+              NEXT.
+            FIND ttVarePris WHERE
+              ttVarePris.Kode     = ttVare.Kode AND
+              ttVarePris.ButikkNr = bufButiker.Butik NO-ERROR.
+            IF NOT AVAILABLE ttVarePris THEN
+            DO:
+              CREATE ttVarePris.
+              ASSIGN
+                ttVarePris.seq      = ttVare.Seq
+                ttVarePris.Kode     = ttVare.Kode
+                ttVarePris.ProfilNr = ArtPris.ProfilNr
+                ttVarePris.ButikkNr = bufButiker.Butik
+                .
+            END.
+            ASSIGN
+              ttVarePris.Pris           = ArtPris.Pris[1]
+              ttVarePris.InnkjopsPris   = ArtPris.InnkjopsPris[1]
+              ttVarePris.Varekost       = ArtPris.VareKost[1]
+              ttVarePris.Pris           = IF ttVarePris.Pris = ? THEN 0 ELSE ttVarePris.Pris
+              ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris
+              ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost
+              ttVarePris.Mva%           = ArtPris.Mva%[1]
+              ttVarePris.TilbPris       = ArtPris.Pris[2]
+              ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris
+              ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
+              ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
+              ttVarePris.EDato          = ArtPris.EDato
+              .
+          END.
+        END.
+      END.
       FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
       IF AVAILABLE VarGr THEN 
       DO:
@@ -417,7 +450,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         FIND StrKonv OF StrekKode NO-LOCK NO-ERROR.
       IF AVAILABLE StrKonv THEN 
         ttVare.Storl = StrKonv.Storl.
-      MESSAGE 'supplerInfoVare:' AVAILABLE StrekKode AVAILABLE StrKonv ttVare.Kode.  
+      MESSAGE '    supplerInfoVare OPPDATERER:' ttVare.Kode ttVare.Beskr.  
     END. /* ARTBAS_FUNNET */  
 
     RETURN.
@@ -458,105 +491,57 @@ CLASS rfid.Vare INHERITS BusinessEntity:
          Strekkode.ArtikkelNr = ArtPris.ArtikkelNr:
        
       FIND FIRST ttVare WHERE
-        ttVare.Kode = Strekkode.Kode NO-ERROR.
+        ttVare.Kode     = Strekkode.Kode NO-ERROR.
       IF NOT AVAILABLE ttVare THEN 
       PRISOPPSTANDELSEN:
       DO:
         CREATE ttVare.
         ASSIGN
           ttVare.Kode       = Strekkode.Kode 
+          ttVare.ArtikkelNr = Strekkode.ArtikkelNr
+          ttVare.eDato      = ArtBas.eDato  
           .
+        supplerInfoVare( INPUT ttVare.Kode ).
       END. /* PRISOPPSTANDELSEN */
 
-      ASSIGN   
-        ttVare.Beskr      = ArtBas.Besk
-        ttVare.LevKod     = ArtBas.LevKod
-        ttVare.LevFargKod = ArtBas.LevFargKod
-        ttVare.Vg         = ArtBas.Vg
-        ttVare.VmId       = ArtBas.VMId
-        ttVare.Farg       = ArtBas.Farg
-        ttVare.Sasong     = ArtBas.Sasong
-        ttVare.LevNr      = ArtBas.LevNr
-        ttVare.NOS        = (IF ArtBas.Lagerkoder MATCHES '*NOS*' THEN 'NOS' ELSE '')              
-        .
-      ASSIGN
-        ttVare.Pris           = ArtPris.Pris[1]
-        ttVare.InnkjopsPris   = ArtPris.InnkjopsPris[1]
-        ttVare.Varekost       = ArtPris.VareKost[1]
-        ttVare.Pris           = IF ttVare.Pris = ? THEN 0 ELSE ttVare.Pris                 
-        ttVare.InnkjopsPris   = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris                 
-        ttVare.VareKost       = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost   
-        ttVare.ProfilNr       = ArtPris.ProfilNr
-        ttVare.TilbPris       = ArtPris.Pris[2]
-        ttVare.Mva%           = ArtPris.Mva%[1]
-        ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
-        ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?  
-        .
-
-        FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE VarGr THEN 
-        DO:
-          FIND HuvGr OF VarGr NO-LOCK NO-ERROR.
+      /* Her skal pris bare legges ut for de butikker som har fått endret pris på den aktuelle profilen. */
+      FOR EACH bufButiker NO-LOCK WHERE 
+        bufButiker.ApningsDato <= TODAY AND 
+        bufButiker.harButikkSystem = TRUE AND 
+        bufButiker.NedlagtDato = ? AND 
+        bufButiker.Butik <= 9999 AND 
+        bufButiker.ProfilNr = ArtPris.ProfilNr:
+        IF CAN-DO('848,849',STRING(bufButiker.Butik)) THEN 
+          NEXT.
+        FIND ttVarePris WHERE
+          ttVarePris.Kode     = ttVare.Kode AND 
+          ttVarePris.ButikkNr = bufButiker.Butik NO-ERROR.
+        IF NOT AVAILABLE ttVarePris THEN 
+        DO: 
+          CREATE ttVarePris.
           ASSIGN 
-            ttVare.VgBeskr = VarGr.VgBeskr
-            ttVare.Hg      = VarGr.Hg
-            ttVare.HgBeskr = (IF AVAILABLE HuvGr THEN HuvGr.HgBeskr ELSE '')
+            ttVarePris.seq      = ttVare.Seq
+            ttVarePris.Kode     = ttVare.Kode
+            ttVarePris.ProfilNr = ArtPris.ProfilNr
+            ttVarePris.ButikkNr = bufButiker.Butik
             .
         END.
-        FIND Varemerke OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE Varemerke THEN 
-          ttVare.VmBeskr = Varemerke.Beskrivelse.
-        FIND Farg OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE Farg THEN 
-          ttVare.FarBeskr = Farg.FarBeskr.
-        FIND SaSong OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE SaSong THEN 
-          ttVare.SasBeskr = SaSong.SasBeskr.
-        FIND LevBas OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE LevBas THEN 
-          ttVare.LevBeskr = LevBas.levnamn.
-  
-        FIND StrKonv OF StrekKode NO-LOCK NO-ERROR.
-        IF AVAILABLE StrKonv THEN 
-          ttVare.Storl = StrKonv.Storl.
-          
-        FOR EACH bufButiker NO-LOCK WHERE 
-          bufButiker.ApningsDato <= TODAY AND 
-          bufButiker.harButikkSystem = TRUE AND 
-          bufButiker.NedlagtDato = ? AND 
-          bufButiker.Butik <= 9999:
-          IF CAN-DO('848,849',STRING(bufButiker.Butik)) THEN 
-            NEXT.
-          FIND ttVarePris WHERE
-            ttVarePris.seq      = ttVare.Seq AND 
-            ttVarePris.ProfilNr = ArtPris.ProfilNr AND 
-            ttVarePris.ButikkNr = bufButiker.Butik NO-ERROR.
-          IF NOT AVAILABLE ttVArePris THEN 
-          DO: 
-            CREATE ttVarePris.
-            ASSIGN 
-              ttVarePris.seq      = ttVare.Seq
-              ttVarePris.ProfilNr = ArtPris.ProfilNr
-              ttVarePris.ButikkNr = bufButiker.Butik
-              .
-          END.
-          ASSIGN
-            ttVarePris.Kode           = ttVare.Kode
-            ttVarePris.Pris           = ArtPris.Pris[1]
-            ttVarePris.InnkjopsPris   = ArtPris.InnkjopsPris[1]
-            ttVarePris.Varekost       = ArtPris.VareKost[1]
-            ttVarePris.Pris           = IF ttVarePris.Pris = ? THEN 0 ELSE ttVarePris.Pris                 
-            ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
-            ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
-            ttVarePris.Mva%           = ArtPris.Mva%[1]
-            ttVarePris.TilbPris       = ArtPris.Pris[2]
-            ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
-            ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
-            ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
-            ttVarePris.EDato          = ArtPris.EDato 
-            .
-        END.  
-        MESSAGE 'supplerPris:' AVAILABLE StrKonv ttVare.Kode.       
+        ASSIGN
+          ttVarePris.Pris           = ArtPris.Pris[1]
+          ttVarePris.InnkjopsPris   = ArtPris.InnkjopsPris[1]
+          ttVarePris.Varekost       = ArtPris.VareKost[1]
+          ttVarePris.Pris           = IF ttVarePris.Pris = ? THEN 0 ELSE ttVarePris.Pris                 
+          ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
+          ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
+          ttVarePris.Mva%           = ArtPris.Mva%[1]
+          ttVarePris.TilbPris       = ArtPris.Pris[2]
+          ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
+          ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
+          ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
+          ttVarePris.EDato          = ArtPris.EDato 
+          .
+      END.  
+      MESSAGE '    supplerPris:' ttVare.Kode ttVare.Beskr.       
     END. /* PRISLOOP */  
 
     RETURN bResult.
@@ -592,61 +577,15 @@ CLASS rfid.Vare INHERITS BusinessEntity:
         CREATE ttVare.
         ASSIGN
           ttVare.Kode       = Strekkode.Kode 
+          ttVare.ArtikkelNr = Strekkode.ArtikkelNr
+          ttVare.eDato      = ArtBas.eDato  
           .
+        supplerInfoVare( INPUT ttVare.Kode ).
       END. /* PRISOPPSTANDELSEN */
-
-      ASSIGN   
-        ttVare.Beskr      = ArtBas.Besk
-        ttVare.LevKod     = ArtBas.LevKod
-        ttVare.LevFargKod = ArtBas.LevFargKod
-        ttVare.Vg         = ArtBas.Vg
-        ttVare.VmId       = ArtBas.VMId
-        ttVare.Farg       = ArtBas.Farg
-        ttVare.Sasong     = ArtBas.Sasong
-        ttVare.LevNr      = ArtBas.LevNr
-        ttVare.NOS        = (IF ArtBas.Lagerkoder MATCHES '*NOS*' THEN 'NOS' ELSE '')              
-        .
-      ASSIGN
-        ttVare.Pris           = ArtPris.Pris[1]
-        ttVare.InnkjopsPris   = ArtPris.InnkjopsPris[1]
-        ttVare.Varekost       = ArtPris.VareKost[1]
-        ttVare.Pris           = IF ttVare.Pris = ? THEN 0 ELSE ttVare.Pris                 
-        ttVare.InnkjopsPris   = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris                 
-        ttVare.VareKost       = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost   
-        ttVare.ProfilNr       = ArtPris.ProfilNr
-        ttVare.TilbPris       = ArtPris.Pris[2]
-        ttVare.Mva%           = ArtPris.Mva%[1]
-        ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
-        ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?  
-        .
-
-        FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE VarGr THEN 
-        DO:
-          FIND HuvGr OF VarGr NO-LOCK NO-ERROR.
-          ASSIGN 
-            ttVare.VgBeskr = VarGr.VgBeskr
-            ttVare.Hg      = VarGr.Hg
-            ttVare.HgBeskr = (IF AVAILABLE HuvGr THEN HuvGr.HgBeskr ELSE '')
-            .
-        END.
-        FIND Varemerke OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE Varemerke THEN 
-          ttVare.VmBeskr = Varemerke.Beskrivelse.
-        FIND Farg OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE Farg THEN 
-          ttVare.FarBeskr = Farg.FarBeskr.
-        FIND SaSong OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE SaSong THEN 
-          ttVare.SasBeskr = SaSong.SasBeskr.
-        FIND LevBas OF ArtBas NO-LOCK NO-ERROR.
-        IF AVAILABLE LevBas THEN 
-          ttVare.LevBeskr = LevBas.levnamn.
-  
-        FIND StrKonv OF StrekKode NO-LOCK NO-ERROR.
-        IF AVAILABLE StrKonv THEN 
-          ttVare.Storl = StrKonv.Storl.
-          
+      
+      /* Skal bare tas med hvis dato er angitt og dato er nyere på varepris. */
+      IF dEDato <> ? AND ArtPris.EDato >= dEDato THEN 
+      DO:    
         FOR EACH bufButiker NO-LOCK WHERE 
           bufButiker.ApningsDato <= TODAY AND 
           bufButiker.harButikkSystem = TRUE AND 
@@ -655,14 +594,14 @@ CLASS rfid.Vare INHERITS BusinessEntity:
           IF CAN-DO('848,849',STRING(bufButiker.Butik)) THEN 
             NEXT.
           FIND ttVarePris WHERE
-            ttVarePris.seq      = ttVare.Seq AND 
-            ttVarePris.ProfilNr = ArtPris.ProfilNr AND 
+            ttVarePris.Kode     = ttVare.Kode AND 
             ttVarePris.ButikkNr = bufButiker.Butik NO-ERROR.
-          IF NOT AVAILABLE ttVArePris THEN 
+          IF NOT AVAILABLE ttVarePris THEN 
           DO: 
             CREATE ttVarePris.
             ASSIGN 
               ttVarePris.seq      = ttVare.Seq
+              ttVarePris.Kode     = ttVare.Kode
               ttVarePris.ProfilNr = ArtPris.ProfilNr
               ttVarePris.ButikkNr = bufButiker.Butik
               .
@@ -682,8 +621,9 @@ CLASS rfid.Vare INHERITS BusinessEntity:
             ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
             ttVarePris.EDato          = ArtPris.EDato 
             .
-        END.  
-        MESSAGE 'supplerPris:' AVAILABLE StrKonv ttVare.Kode.       
+        END.
+      END.  
+      MESSAGE '    supplerVare:' ttVare.Kode ttVare.Beskr.       
     END. /* PRISLOOP */  
 
     RETURN bResult.

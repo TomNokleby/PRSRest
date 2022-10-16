@@ -111,6 +111,8 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
         qh:QUERY-PREPARE("PRESELECT EACH Prod " + cWhere).
         qh:QUERY-OPEN ().
         numRecs = qh:NUM-RESULTS.
+        qh:QUERY-CLOSE ().
+        DELETE OBJECT qh.
     END METHOD.  
 
     /*------------------------------------------------------------------------------
@@ -221,6 +223,8 @@ CLASS rfid.VareLager INHERITS BusinessEntity:
                 END.
                 iCount = iCount + 1.
             END.
+            hQuery:QUERY-CLOSE.
+            DELETE OBJECT hQuery.
         END.
         ELSE 
         DO:

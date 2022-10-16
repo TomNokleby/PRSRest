@@ -2,3 +2,7 @@
 *.r
 
 *.log
+
+.settings/
+
+protrace.22360
