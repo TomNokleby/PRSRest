@@ -15,12 +15,16 @@ USING OpenEdge.Net.HTTP.StatusCodeEnum.
 USING OpenEdge.Web.WebHandler.
 USING Progress.Json.ObjectModel.JsonObject.
 USING Progress.Json.ObjectModel.JsonArray.
+USING Progress.Json.ObjectModel.ObjectModelParser.
 
 BLOCK-LEVEL ON ERROR UNDO, THROW.
 
 CLASS KundeOrdreHandler INHERITS WebHandler: 
 
   DEFINE VARIABLE cLogg AS CHARACTER INITIAL 'KundeOrdreWebHandler' NO-UNDO.
+  DEFINE VARIABLE lcLagerInfo    AS LONGCHAR     NO-UNDO.
+  DEFINE VARIABLE oLagerInfo     AS JsonObject   NO-UNDO.      
+  DEFINE VARIABLE oParser        AS ObjectModelParser.
 
   DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
 
@@ -29,6 +33,14 @@ CLASS KundeOrdreHandler INHERITS WebHandler:
     FIELD cTekst  AS CHARACTER SERIALIZE-NAME 'Tekst'
     FIELD cB_Id   AS CHARACTER SERIALIZE-NAME 'B_id'  
     .
+
+  DEFINE TEMP-TABLE ttArtLag
+    FIELD ButikkNr AS INTEGER SERIALIZE-NAME 'Butikk'
+    FIELD Kode AS CHARACTER SERIALIZE-NAME 'EAN'
+    FIELD LagAnt AS INTEGER SERIALIZE-NAME 'Antall'
+    FIELD EndretDatoTid AS DATETIME SERIALIZE-NAME 'SistEndret'
+    FIELD startDatoTid AS DATETIME SERIALIZE-NAME 'OrdreOppdatert'
+    INDEX idxButKode AS PRIMARY UNIQUE ButikkNr Kode.
 
   METHOD OVERRIDE PROTECTED INTEGER HandleNotAllowedMethod( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
     
@@ -182,7 +194,7 @@ CLASS KundeOrdreHandler INHERITS WebHandler:
         CAST(oArray, JsonArray):Writefile('C:\home\lindbak\ankommet\kundeordre\' + 'Array' + STRING(TODAY,"99999999") + '_' + REPLACE(STRING(TIME,"HH:MM:SS"),':','') + '.json', TRUE).
 
       /* Lagrer ordren i databasen. */  
-      RUN bo\DigitrollOrders2prs.p (oArray, poRequest:ContentType, piStatusCode, OUTPUT piTotAntOrder) NO-ERROR.
+      RUN bo\DigitrollOrders2prs.p (oArray, poRequest:ContentType, piStatusCode, OUTPUT piTotAntOrder, OUTPUT TABLE ttArtLag) NO-ERROR.
       IF ERROR-STATUS:ERROR THEN            
       DO:
         ASSIGN 
@@ -221,15 +233,28 @@ CLASS KundeOrdreHandler INHERITS WebHandler:
       oResponse               = NEW OpenEdge.Web.WebResponse()
       /*oResponse:StatusCode  = INTEGER(StatusCodeEnum:OK)*/
       oResponse:StatusCode    = piStatusCode
-      oResponse:Entity        = oStatus
       oResponse:ContentType   = 'application/json':u
       .
+      
+    IF CAN-FIND (FIRST ttArtLag) THEN 
+    DO:
+      oParser = NEW ObjectModelParser().      
+      TEMP-TABLE ttArtLag:WRITE-JSON("longchar",lcLagerInfo,TRUE).
+      oLagerInfo = CAST(oParser:Parse(lcLagerInfo),JsonObject).
+      oResponse:Entity = oLagerInfo.
+    END.
+    ELSE 
+      ASSIGN 
+        oResponse:Entity = oStatus
+        .
+    
     /* The WebResponseWriter ensures that the status line and
        all headers are writted out before the message body/entity. */
     oWriter = NEW WebResponseWriter(oResponse).
     oWriter:Open().
     oWriter:Close().
-        
+    
+    /*----    
     /* The WebResponseWriter ensures that the status line and
        all headers are writted out before the message body/entity. */
     ASSIGN 
@@ -238,6 +263,7 @@ CLASS KundeOrdreHandler INHERITS WebHandler:
         
     /* Finish writing the response message */
     oWriter:Close().
+    ----*/
         
     /* A response of 0 means that this handler will build the entire response;
        a non-zero value is mapped to a static handler in the webapp's /static/error folder.

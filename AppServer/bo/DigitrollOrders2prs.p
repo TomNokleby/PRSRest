@@ -30,10 +30,19 @@ USING OpenEdge.Core.WidgetHandle.
 /* PROPATH = PROPATH + "," + "C:\Progressx86\OpenEdge\src\netlib\OpenEdge.Net.pl" + "," + */
 /*                         "C:\Progressx86\OpenEdge\tty\netlib\OpenEdge.Net.pl".          */
 
+DEFINE TEMP-TABLE ttArtLag
+  FIELD ButikkNr AS INTEGER SERIALIZE-NAME 'Butikk'
+  FIELD Kode AS CHARACTER SERIALIZE-NAME 'EAN'
+  FIELD LagAnt AS INTEGER SERIALIZE-NAME 'Antall'
+  FIELD EndretDatoTid AS DATETIME SERIALIZE-NAME 'SistEndret'
+  FIELD startDatoTid AS DATETIME SERIALIZE-NAME 'OrdreOppdatert'
+  INDEX idxButKode AS PRIMARY UNIQUE ButikkNr Kode.
+
 DEFINE INPUT PARAMETER oOrderArray AS JsonArray  NO-UNDO.
 DEFINE INPUT PARAMETER cObjectType AS CHARACTER   NO-UNDO.
 DEFINE INPUT PARAMETER iStatusCode AS INTEGER     NO-UNDO.
 DEFINE OUTPUT PARAMETER iTotAntOrder AS INTEGER      NO-UNDO.
+DEFINE OUTPUT PARAMETER TABLE FOR ttArtLag.
 
 DEFINE VARIABLE cType               AS CHARACTER         NO-UNDO.
 DEFINE VARIABLE lcCutomerList       AS LONGCHAR          NO-UNDO.
@@ -67,6 +76,7 @@ DEFINE VARIABLE dtTmp               AS DATETIME          NO-UNDO.
 DEFINE VARIABLE dtLastChDt          AS DATETIME          NO-UNDO.
 DEFINE VARIABLE iTimeTmp            AS INTEGER           NO-UNDO.
 DEFINE VARIABLE iRadnr              AS INTEGER           NO-UNDO.
+DEFINE VARIABLE dtStartDatoTid      AS DATETIME          NO-UNDO.
 
 DEFINE VARIABLE iSKIP               AS INTEGER           NO-UNDO.
 DEFINE VARIABLE iFETCH              AS INTEGER           NO-UNDO.
@@ -177,6 +187,9 @@ DEFINE TEMP-TABLE ttRowid
   FIELD rRowid AS ROWID
   FIELD BatchNr AS DECIMAL
   FIELD iStatus AS INTEGER INITIAL 0 
+  FIELD BatchType AS CHARACTER 
+  FIELD OrderId AS CHARACTER 
+  FIELD storeNum AS INTEGER 
   .
 
 DEFINE VARIABLE OrderDataSet    AS HANDLE NO-UNDO.
@@ -247,12 +260,16 @@ FUNCTION getDT RETURNS DATETIME
 hSourceProc = SOURCE-PROCEDURE.
 cOldDateformat = SESSION:DATE-FORMAT.
 
+dtStartDatoTid = NOW.
+
 SESSION:DATE-FORMAT = "ymd".
-FIND FIRST lastGetOrder NO-LOCK NO-ERROR.
-IF NOT AVAILABLE lastGetOrder THEN 
-DO:
-  CREATE lastGetOrder.
-  FIND CURRENT lastGetOrder NO-LOCK.
+DO TRANSACTION:
+  FIND FIRST lastGetOrder NO-LOCK NO-ERROR.
+  IF NOT AVAILABLE lastGetOrder THEN 
+  DO:
+    CREATE lastGetOrder.
+    FIND CURRENT lastGetOrder NO-LOCK.
+  END.
 END.
 
 dtTmp = NOW - (TIMEZONE * 60 * 1000).
@@ -341,7 +358,7 @@ DO:
   DELETE OBJECT tmpOrderDataSet NO-ERROR.
         
   IF lTmpUrl = FALSE AND iStatusCode = 200 THEN 
-  DO:
+  DO TRANSACTION:
     IF cType = "NEW" THEN 
     DO:
       /* vi hämtar först cancelled och sen new. */
@@ -365,18 +382,25 @@ END.
 DELETE OBJECT oParser NO-ERROR.
 SESSION:DATE-FORMAT = cOldDateformat.
 
-MESSAGE 'Finner ttRowId' CAN-FIND(FIRST ttRowId)
-VIEW-AS ALERT-BOX.
 IF CAN-FIND(FIRST ttRowId) THEN
 DO:
-  MESSAGE 'starter sendOrder2prs'
-  VIEW-AS ALERT-BOX. 
-  
+  /* Kopierer ordren fra sendtoprstrans til digiorderbatch. */.
   RUN sendOrder2prs.
 END.
 IF CAN-FIND(FIRST ttRowId WHERE ttRowId.iStatus = 1) THEN
 DO: 
+  /* Leser fra digiorderbatch og oppretter KOrdreHode. Kjører run_PutFromDigitroll.p. */.
   RUN oppdaterOrderPrs.
+  /* Leser ordrelinjene på oppdaterte ordre og legger dem i respons datasettet. */
+  RUN byggResponsDatasett.
+END.
+
+IF SESSION:BATCH-MODE THEN 
+DO:
+  FILE-INFO:FILE-NAME = ".".
+  MESSAGE "Current directory:" FILE-INFO:FULL-PATHNAME VIEW-AS ALERT-BOX.
+  MESSAGE "Propath:" PROPATH VIEW-AS ALERT-BOX.
+  MESSAGE "Transaksjon AKTIV:" TRANSACTION VIEW-AS ALERT-BOX.
 END.
 
 EMPTY TEMP-TABLE ttRowId.
@@ -939,6 +963,71 @@ END PROCEDURE.
 
 &ENDIF
 
+&IF DEFINED(EXCLUDE-byggResponsDatasett) = 0 &THEN
+
+&ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE byggResponsDatasett Procedure
+PROCEDURE byggResponsDatasett:
+/*------------------------------------------------------------------------------
+ Purpose:
+ Notes:
+------------------------------------------------------------------------------*/
+  DEFINE VARIABLE piLoop AS INTEGER NO-UNDO.
+  
+  EMPTY TEMP-TABLE ttArtLag.
+  
+  DO piLoop = 1 TO 15:
+    FOR EACH ttRowId WHERE 
+      ttRowId.iStatus   = 1 AND 
+      ttRowId.BatchType = 'ORDER':
+      FOR LAST KOrdreHode NO-LOCK WHERE 
+        KOrdreHode.DatoTidEndret >= dtStartDatoTid AND 
+        KOrdreHode.LevStatus = '50',
+        EACH KOrdreLinje OF KOrdreHode NO-LOCK WHERE 
+          KOrdreLinje.Kode > '':
+        FIND LAST ArtLag NO-LOCK WHERE 
+          ArtLag.ArtikkelNr = DEC(KOrdreLinje.VareNr) AND 
+          ArtLag.Butik = ttRowId.storeNum AND 
+          ArtLag.StrKode = KOrdreLinje.StrKode NO-ERROR NO-WAIT.
+        IF AVAILABLE ArtLag THEN 
+        DO:
+          
+          FIND ttArtLag WHERE 
+               ttArtLag.ButikkNr = ArtLag.Butik AND 
+               ttArtLAg.Kode     = KOrdreLinje.Kode NO-ERROR.
+                
+          IF NOT AVAILABLE ttArtLag THEN 
+          DO:
+            CREATE ttArtLag.
+            ASSIGN
+              ttArtLag.ButikkNr      = ArtLag.Butik
+              ttArtLag.Kode          = KOrdreLinje.Kode
+              ttArtLag.LagAnt        = ArtLag.LagAnt
+              ttArtLag.EndretDatoTid = ArtLag.EndretDatoTid
+              ttArtLag.startDatoTid  = dtStartDatoTid 
+              .
+          END.
+          ELSE DO:
+            ASSIGN
+              ttArtLag.LagAnt        = ArtLag.LagAnt
+              ttArtLag.EndretDatoTid = ArtLag.EndretDatoTid
+              .
+          END.
+        END.
+      END.  
+    END.
+    /* Venter litt på at transene skal bli oppdatert. */
+    PAUSE 0.1 NO-MESSAGE.
+  END.
+
+END PROCEDURE.
+  
+/* _UIB-CODE-BLOCK-END */
+&ANALYZE-RESUME
+
+
+&ENDIF
+
+
 &IF DEFINED(EXCLUDE-fixaBlobbar) = 0 &THEN
 
 &ANALYZE-SUSPEND _UIB-CODE-BLOCK _PROCEDURE fixaBlobbar Procedure 
@@ -1031,6 +1120,9 @@ PROCEDURE LagraBlob :
       ASSIGN 
         ttRowId.rRowId      = ROWID(sendtoprstrans)
         ttRowId.BatchNr     = dBatchNr
+        ttRowId.OrderId     = tt_OrderHeader.orderId
+        ttRowId.BatchType   = cBatchType
+        ttRowId.storeNum    = tt_OrderHeader.storeNum
         .
     END.    
 
@@ -1058,6 +1150,9 @@ PROCEDURE LagraBlob :
       ASSIGN 
         ttRowId.rRowId      = ROWID(sendtoprstrans)
         ttRowId.BatchNr     = dBatchNr
+        ttRowId.OrderId     = tt_OrderHeader.orderId
+        ttRowId.BatchType   = "SHIPDOC1"
+        ttRowId.storeNum    = tt_OrderHeader.storeNum
         .
         
       dBatchnr = dBatchnr + 1.
@@ -1082,6 +1177,9 @@ PROCEDURE LagraBlob :
       ASSIGN 
         ttRowId.rRowId      = ROWID(sendtoprstrans)
         ttRowId.BatchNr     = dBatchNr
+        ttRowId.OrderId     = tt_OrderHeader.orderId
+        ttRowId.BatchType   = "SHIPDOC2"
+        ttRowId.storeNum    = tt_OrderHeader.storeNum
         .
     END.
     RELEASE sendtoprstrans.
@@ -1100,11 +1198,11 @@ END PROCEDURE.
 PROCEDURE oppdaterOrderPrs:
 /*------------------------------------------------------------------------------
  Purpose:
- Notes:
+ Notes: Kjører alltid oppdatering av alle hitils mottatte åpne ordre.
 ------------------------------------------------------------------------------*/
-
-MESSAGE '  subrutine oppdaterOrderPrs'
-VIEW-AS ALERT-BOX.
+  MESSAGE 'oppdaterOrderPrs: Oppdaterer alle mottatte åpne ordre.' 
+    VIEW-AS ALERT-BOX.
+  RUN run_PutFromDigitroll.p.
 
 END PROCEDURE.
   
