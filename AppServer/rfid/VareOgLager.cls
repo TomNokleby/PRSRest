@@ -120,6 +120,7 @@ CLASS rfid.VareOgLager:
                     ttVareLager.Pris = IF AVAILABLE ArtPris THEN ArtPris.Pris[1] ELSE 0
                     ttVareLager.InnkjopsPris = IF AVAILABLE ArtPris THEN ArtPris.InnkjopsPris[1] ELSE 0
                     ttVareLager.Varekost = IF AVAILABLE ArtPris THEN ArtPris.VareKost[1] ELSE 0
+                    ttVareLager.EndretDatoTid = IF AVAILABLE ArtLag THEN ArtLag.EndretDatoTid ELSE ttVareLager.EndretDatoTid 
                 .
             END.
             

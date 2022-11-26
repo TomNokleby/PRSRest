@@ -43,6 +43,7 @@ FIELD Pris AS DECIMAL FORMAT "->>,>>>,>>9.99"
 FIELD InnkjopsPris AS DECIMAL FORMAT "->>,>>>,>>9.99"
 FIELD Varekost AS DECIMAL FORMAT "->>,>>>,>>9.99"
 FIELD EDato AS DATE LABEL "Endret"
+FIELD EndretDatoTid AS DATETIME LABEL "EndretDatoTid"
 INDEX seq IS PRIMARY UNIQUE seq
 INDEX Artikkel  ArtikkelNr  ASCENDING  Kode  ASCENDING 
 INDEX StrekKode IS  UNIQUE  Kode  ASCENDING 
