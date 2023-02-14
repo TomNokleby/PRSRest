@@ -377,7 +377,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
           ttVare.InnkjopsPris   = IF ttVare.InnkjopsPris = ? THEN 0 ELSE ttVare.InnkjopsPris
           ttVare.VareKost       = IF ttVare.VareKost = ? THEN 0 ELSE ttVare.VareKost
           ttVare.ProfilNr       = ArtPris.ProfilNr
-          ttVare.TilbPris       = ArtPris.Pris[2]
+          ttVare.TilbPris       = IF ArtPris.Tilbud THEN ArtPris.Pris[2] ELSE 0
           ttVare.Mva%           = ArtPris.Mva%[1]
           ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
           ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
@@ -413,7 +413,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
               ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris
               ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost
               ttVarePris.Mva%           = ArtPris.Mva%[1]
-              ttVarePris.TilbPris       = ArtPris.Pris[2]
+              ttVarePris.TilbPris       = IF ArtPris.Tilbud THEN ArtPris.Pris[2] ELSE 0
               ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris
               ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
               ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
@@ -534,7 +534,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
           ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
           ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
           ttVarePris.Mva%           = ArtPris.Mva%[1]
-          ttVarePris.TilbPris       = ArtPris.Pris[2]
+          ttVarePris.TilbPris       = IF ArtPris.Tilbud THEN ArtPris.Pris[2] ELSE 0
           ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
           ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
           ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
@@ -615,7 +615,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
             ttVarePris.InnkjopsPris   = IF ttVarePris.InnkjopsPris = ? THEN 0 ELSE ttVarePris.InnkjopsPris                 
             ttVarePris.VareKost       = IF ttVarePris.VareKost = ? THEN 0 ELSE ttVarePris.VareKost   
             ttVarePris.Mva%           = ArtPris.Mva%[1]
-            ttVarePris.TilbPris       = ArtPris.Pris[2]
+            ttVarePris.TilbPris       = IF ArtPris.Tilbud THEN ArtPris.Pris[2] ELSE 0
             ttVarePris.TilbPris       = IF ttVarePris.TilbPris = ? THEN 0 ELSE ttVarePris.TilbPris                 
             ttVarePris.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
             ttVarePris.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
