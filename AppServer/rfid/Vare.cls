@@ -3,9 +3,11 @@
    File        : Vare
     
    Syntax      : 
-   Author(s)   : tny
+   Author(s)   : Tom Nøkleby
    Created     : Mon Jul 30 11:42:31 CEST 2018
-   Notes       : Test endring for GIT
+   Notes       : REST Endpoint som leverer vare og prisinformasjon.
+                 Prisinformasjonen omfatter pris på ulike pris profiler, 
+                 samt eventuell tilbudspris med periode angivelse.
  ----------------------------------------------------------------------*/
   
 @program FILE(name="Vare.cls", module="AppServer").
