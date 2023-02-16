@@ -371,6 +371,8 @@ CLASS rfid.Vare INHERITS BusinessEntity:
           ArtPris.ProfilNr = 1 NO-ERROR.
       IF AVAILABLE ArtPris THEN
       DO:
+        FIND StrType NO-LOCK WHERE 
+          StrType.StrTypeId = ArtBAs.StrTypeId NO-ERROR.
         ASSIGN
           ttVare.Pris           = ArtPris.Pris[1]
           ttVare.InnkjopsPris   = ArtPris.InnkjopsPris[1]
@@ -383,6 +385,7 @@ CLASS rfid.Vare INHERITS BusinessEntity:
           ttVare.Mva%           = ArtPris.Mva%[1]
           ttVare.TilbFraDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudFraDato, ArtPris.TilbudFraTid * 1000) ELSE ?
           ttVare.TilbTilDatoTid = IF ArtPris.Tilbud THEN DATETIME(ArtPris.TilbudTilDato, ArtPris.TilbudTilTid * 1000) ELSE ?
+          ttVare.AlfaFordeling  = IF AVAILABLE StrType THEN REPLACE(StrType.AlfaFordeling,' ','') ELSE ''
           .
         /* TN 1/10-22 Hvis det avgrenses på dato, skal ikke pris pr. butikk legges ut. */
         IF dEDato = ? THEN 
