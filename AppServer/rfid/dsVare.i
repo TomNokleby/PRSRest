@@ -6,7 +6,7 @@
     Description :
     Author(s)   : tny
     Created     : Mon Jul 30 11:42:31 CEST 2018
-    Notes       : 
+    Notes       : Ny test på commit.
   ----------------------------------------------------------------------*/
   
   /* ***************************  Definitions  ************************** */
