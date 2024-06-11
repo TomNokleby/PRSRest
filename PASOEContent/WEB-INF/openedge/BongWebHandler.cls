@@ -130,14 +130,17 @@ CLASS BongWebHandler INHERITS WebHandler:
     DEFINE VARIABLE pcJsonString AS LONGCHAR                        NO-UNDO.
     DEFINE VARIABLE piStatusCode AS INTEGER                         NO-UNDO.
   
-    MESSAGE 'POST HandlePost'.  
+    MESSAGE 'POST HandlePost for BongWebHAndler'.
+      
+    EMPTY TEMP-TABLE ttBongHode.
+    EMPTY TEMP-TABLE ttBongLinje.
       
     rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
     ASSIGN 
-      pcLogg = cLogg + STRING(TODAY,'99999999') + STRING(TIME,'HH:MM:SS')
+      pcLogg = 'BongWebHandler' + STRING(TODAY,'99999999') + '_' + REPLACE(STRING(TIME,'HH:MM:SS'),':','')
       .
-    rStandardFunksjoner:SkrivTilLogg(cLogg,
-      'POST: ' + 'Gurre var her.'
+    rStandardFunksjoner:SkrivTilLogg(pcLogg,
+      'POST: ' + 'Bong mottatt.'
       ).
     IF poRequest:ContentType = 'application/json' THEN 
     DO:
