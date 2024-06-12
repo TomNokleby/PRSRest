@@ -22,7 +22,7 @@ CLASS BongWebHandler INHERITS WebHandler:
 
   {bo\bong.i}
 
-  DEFINE VARIABLE cLogg               AS CHARACTER                      INITIAL 'BongWebHandler' NO-UNDO.
+  DEFINE VARIABLE cLogg AS CHARACTER INITIAL 'BongWebHandler' NO-UNDO.
 
   DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
 
@@ -31,7 +31,7 @@ CLASS BongWebHandler INHERITS WebHandler:
     FIELD cTekst  AS CHARACTER SERIALIZE-NAME 'Tekst'
     FIELD cB_Id   AS CHARACTER SERIALIZE-NAME 'B_id'  
     .
-    
+
   METHOD OVERRIDE PROTECTED INTEGER HandleNotAllowedMethod( INPUT poRequest AS OpenEdge.Web.IWebRequest ):
     
     UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").
@@ -126,10 +126,10 @@ CLASS BongWebHandler INHERITS WebHandler:
       
     DEFINE VARIABLE pcStatus     AS CHARACTER                       NO-UNDO.
     DEFINE VARIABLE pcTekst      AS CHARACTER                       NO-UNDO.
-    DEFINE VARIABLE pcLogg       AS CHARACTER                       NO-UNDO.
     DEFINE VARIABLE pcJsonString AS LONGCHAR                        NO-UNDO.
     DEFINE VARIABLE piStatusCode AS INTEGER                         NO-UNDO.
   
+<<<<<<< Updated upstream
     MESSAGE 'POST HandlePost for BongWebHAndler'.
       
     EMPTY TEMP-TABLE ttBongHode.
@@ -141,7 +141,17 @@ CLASS BongWebHandler INHERITS WebHandler:
       .
     rStandardFunksjoner:SkrivTilLogg(pcLogg,
       'POST: ' + 'Bong mottatt.'
+=======
+    MESSAGE 'Behandle POST i BongWebHandler'.  
+      
+    initParam(  ).
+      
+    rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
+    rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'POST: ' + 'Behandle POST i BongWebHandler.'
+>>>>>>> Stashed changes
       ).
+    
     IF poRequest:ContentType = 'application/json' THEN 
     DO:
       oData = CAST(poRequest:Entity, JsonObject).
@@ -173,6 +183,10 @@ CLASS BongWebHandler INHERITS WebHandler:
       piStatusCode = 400.
       pcStatus     = 'FEIL'.
     END.
+
+    rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'POST: ' + ' StatusCode: ' + STRING(piStatusCode) + ' Status: ' + pcStatus + ' ' + pcTekst   
+      ).
     
     oStatus = NEW JSonObject().
         
@@ -220,6 +234,20 @@ CLASS BongWebHandler INHERITS WebHandler:
     
     UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").      
   END METHOD.
+
+  /*------------------------------------------------------------------------------
+   Purpose:
+   Notes:
+  ------------------------------------------------------------------------------*/
+
+  METHOD PUBLIC VOID initParam(  ):
+
+    ASSIGN 
+      cLogg = cLogg + STRING(TODAY,'99999999')
+      .
     
+    RETURN.
+
+  END METHOD.    
   
 END CLASS.

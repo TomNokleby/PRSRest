@@ -27,6 +27,9 @@ DEFINE VARIABLE ix          AS INTEGER NO-UNDO.
 DEFINE VARIABLE lFilId      AS DECIMAL NO-UNDO.
 DEFINE VARIABLE lDataSettId AS DECIMAL NO-UNDO.
 DEFINE VARIABLE iButNr      AS INTEGER NO-UNDO.
+DEFINE VARIABLE cLogg AS CHARACTER NO-UNDO.
+
+DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
 
 /*BLOCK-LEVEL ON ERROR UNDO, THROW.*/
 
@@ -34,6 +37,13 @@ DEFINE VARIABLE iButNr      AS INTEGER NO-UNDO.
 
 
 /* ***************************  Main Block  *************************** */
+rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
+
+ASSIGN 
+  cLogg = 'Lagrebong' + STRING(TODAY,'99999999')
+  .
+OS-COMMAND SILENT mkdir VALUE('log') NO-ERROR. 
+
 FIND FIRST ttBongHode NO-LOCK NO-ERROR.
 
 IF AVAILABLE ttBongHode THEN 
@@ -55,7 +65,10 @@ DO.
               REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(STRING(NOW),'/',''),':',''),' ','_'),',','_'),'+','_') +
               '.json'
               .
-
+  rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'Fil: ' + cFilNavn   
+      ).
+      
   /* Lagrer en kopi av bongen på disk. */
   DATASET dsBongHode:WRITE-JSON('file',cFilNavn,TRUE) NO-ERROR.
   IF ERROR-STATUS:ERROR THEN
@@ -196,12 +209,16 @@ DO.
         
         ASSIGN  
           cStatus     = 'OK'
-          cTekst      = 'Vellykket lagring av Bong.'
+          cTekst      = 'Meget vellykket lagring av Bong.'
           iStatusCode = 200
           .
       END. /* LAGREBONG */
     END. /* LAGRE */
   END.
+
+  rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst   
+      ).
   
   IF iStatusCode = 200 THEN 
   DO:
