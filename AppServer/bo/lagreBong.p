@@ -68,15 +68,19 @@ DO.
   rStandardFunksjoner:SkrivTilLogg(cLogg,
       'Fil: ' + cFilNavn   
       ).
+  MESSAGE 'Loggfil: ' + cFilNavn.  
       
   /* Lagrer en kopi av bongen på disk. */
   DATASET dsBongHode:WRITE-JSON('file',cFilNavn,TRUE) NO-ERROR.
   IF ERROR-STATUS:ERROR THEN
+  DO:
     ASSIGN  
       cStatus     = 'FEIL'
       cTekst      = 'Feil ved skriving av bong til fil.'
       iStatusCode = 400
       .
+    MESSAGE cstatus STRING(iStatusCode) cTekst.  
+  END.
   ELSE 
   LAGRE:
   DO:
@@ -93,6 +97,7 @@ DO.
           cTekst      = 'Ukjent butikk på bongen (' + STRING(iButNr) + ').'
           iStatusCode = 400
           .
+        MESSAGE cstatus STRING(iStatusCode) cTekst.  
         LEAVE LAGRE.
       END.
     
@@ -106,6 +111,7 @@ DO.
           cTekst      = 'Bong finnes fra før med samme B_Id (' + STRING(ttBongHode.B_Id) + ').'
           iStatusCode = 400
           .
+        MESSAGE cstatus STRING(iStatusCode) cTekst.  
         LEAVE LAGRE.
       END.
       
@@ -122,6 +128,7 @@ DO.
           cTekst      = 'Bong finnes fra før med samme butikk, gruppe, kasse, dato og bongnr.'
           iStatusCode = 400
           .
+        MESSAGE cstatus STRING(iStatusCode) cTekst.  
         LEAVE LAGRE.
       END.
     ELSE DO:
@@ -136,6 +143,8 @@ DO.
             cTekst      = RETURN-VALUE
             iStatusCode = 400
             .
+          MESSAGE cstatus STRING(iStatusCode) cTekst. 
+          UNDO LAGREBONG, LEAVE LAGRE. 
         END.
         
         CREATE BongHode.
@@ -155,9 +164,10 @@ DO.
             cStatus     = 'FEIL'
             iStatusCode = 400
             .
+          MESSAGE cstatus STRING(iStatusCode) cTekst.  
           IF AVAILABLE BongHode THEN 
             DELETE BongHode.
-          LEAVE LAGREBONG.
+          UNDO LAGREBONG, LEAVE LAGRE. 
         END.
         
         LESBONGLINJER:
@@ -172,6 +182,8 @@ DO.
               cTekst      = RETURN-VALUE
               iStatusCode = 400
               .
+            MESSAGE cstatus STRING(iStatusCode) cTekst.  
+            UNDO LAGREBONG, LEAVE LAGRE. 
           END.
         
           CREATE BongLinje.
@@ -188,11 +200,12 @@ DO.
               cStatus     = 'FEIL'
               iStatusCode = 400
               .
+            MESSAGE cstatus STRING(iStatusCode) cTekst.  
             IF AVAILABLE BongHode THEN 
               DELETE BongHode.
             IF AVAILABLE BongLinje THEN 
               DELETE BongLinje. 
-            LEAVE LAGREBONG.
+            UNDO LAGREBONG, LEAVE LAGRE. 
           END.
         END. /* LESBONGLINJER */  
 
@@ -212,6 +225,7 @@ DO.
           cTekst      = 'Meget vellykket lagring av Bong.'
           iStatusCode = 200
           .
+        MESSAGE cstatus STRING(iStatusCode) cTekst.  
       END. /* LAGREBONG */
     END. /* LAGRE */
   END.
@@ -219,6 +233,7 @@ DO.
   rStandardFunksjoner:SkrivTilLogg(cLogg,
       'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst   
       ).
+  MESSAGE 'Ferdig lagrebong.p:' cstatus STRING(iStatusCode) cTekst.  
   
   IF iStatusCode = 200 THEN 
   DO:
@@ -716,60 +731,54 @@ PROCEDURE addInfoBongLinje:
                               string(MONTH(ttBongLinje.TransDato),"99") + 
                               string(DAY(ttBongLinje.TransDato),"99")
       .
-    FIND Strekkode NO-LOCK WHERE strekkode.Kode = ttBongLinje.Strekkode NO-ERROR.
-    IF NOT AVAILABLE Strekkode THEN 
+    IF ttBongLinje.TTId < 11 THEN 
+    VARELINJE:
     DO:
-      rcTekst = 'Felt BongLinje.Strekkode inneholder en ukjent strekkode.'.
-      LEAVE LEGGPAINFO.
-    END.
-    FIND StrKonv OF Strekkode NO-LOCK NO-ERROR.
-    IF AVAILABLE StrKonv THEN 
-      ttBongLinje.Storrelse = StrKonv.Storl.
-    FIND ArtBas NO-LOCK WHERE 
-      ArtBas.ArtikkelNr = Strekkode.ArtikkelNr NO-ERROR.
-    IF NOT AVAILABLE ArtBas THEN 
-    DO:
-      rcTekst = 'Felt BongLinje.Strekkode er ikke koblet til en artikkel.'.
-      LEAVE LEGGPAINFO.
-    END.
-    ELSE DO:
-      FIND butiker NO-LOCK WHERE Butiker.Butik = iButNr NO-ERROR.
-      FIND huvgr OF ArtBas NO-LOCK NO-ERROR.
-      FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
-      FIND LevBas OF ArtBas NO-LOCK NO-ERROR.  
-      FIND ArtPris OF ArtBas NO-LOCK WHERE 
-        ArtPris.ProfilNr = Butiker.ProfilNr NO-ERROR.
-      IF NOT AVAILABLE ArtPris THEN 
-      FIND FIRST ArtPris OF ArtBas NO-LOCK NO-ERROR.    
-      FIND FIRST Moms NO-LOCK WHERE 
-        Moms.MomsProc = ttBongLinje.Mva% NO-ERROR.
-
-/*      MESSAGE 'TEST available'              */
-/*        'huvgr' AVAILABLE huvgr SKIP        */
-/*        'vargr' AVAILABLE vargr SKIP        */
-/*        'levbas' AVAILABLE levbas SKIP      */
-/*        'artpris' AVAILABLE artpris SKIP    */
-/*        'butiker' AVAILABLE butiker SKIP    */
-/*        'moms' AVAILABLE moms SKIP          */
-/*        'strekkode' AVAILABLE strekkode SKIP*/
-/*        'strkonv' AVAILABLE strkonv         */
-/*      VIEW-AS ALERT-BOX.                    */
-
-      ASSIGN
-        ttBongLinje.BongTekst = IF ttBongLinje.BongTekst = '' THEN ArtBas.Bongtekst ELSE ttBongLinje.BongTekst 
-        ttBongLinje.LopeNr    = ArtBas.LopNr
-        ttBongLinje.VareGr    = ArtBas.Vg
-        ttBongLinje.DivInfo   = ArtBas.DivInfo[1]
-        ttBongLinje.HovedGr   = ArtBas.Hg
-        ttBongLinje.HovedGrBeskrivelse = IF AVAILABLE HuvGr THEN HuvGr.HgBeskr ELSE ttBongLinje.HovedGrBeskrivelse
-        ttBongLinje.VareGruppeNavn = IF AVAILABLE VArGr THEN VarGr.VgBeskr ELSE ttBongLinje.VareGruppeNavn
-        ttBongLinje.LevNr     = ArtBas.LevNr
-        ttBongLinje.LevNavn   = IF AVAILABLE LevBas THEN LevBas.levnamn ELSE ttBongLinje.LevNavn
-        ttBongLinje.MvaGr     = IF AVAILABLE Moms THEN Moms.MomsKod ELSE 1
-        ttBongLinje.MvaGruppeNavn = IF AVAILABLE Moms THEN Moms.Beskrivelse ELSE ttBongLinje.MvaGruppeNavn
-        ttBongLinje.BongPris  = IF AVAILABLE ArtPris THEN ArtPris.Pris[IF ArtPris.Tilbud THEN 2 ELSE 1] ELSE ttBongLinje.BongPris     
-        .
-    END.
+      FIND Strekkode NO-LOCK WHERE strekkode.Kode = ttBongLinje.Strekkode NO-ERROR.
+      IF NOT AVAILABLE Strekkode THEN 
+      DO:
+        rcTekst = 'Felt BongLinje.Strekkode inneholder en ukjent strekkode.'.
+        LEAVE LEGGPAINFO.
+      END.
+      FIND StrKonv OF Strekkode NO-LOCK NO-ERROR.
+      IF AVAILABLE StrKonv THEN 
+        ttBongLinje.Storrelse = StrKonv.Storl.
+      FIND ArtBas NO-LOCK WHERE 
+        ArtBas.ArtikkelNr = Strekkode.ArtikkelNr NO-ERROR.
+      IF NOT AVAILABLE ArtBas THEN 
+      DO:
+        rcTekst = 'Felt BongLinje.Strekkode er ikke koblet til en artikkel.'.
+        LEAVE LEGGPAINFO.
+      END.
+      ELSE DO:
+        FIND butiker NO-LOCK WHERE Butiker.Butik = iButNr NO-ERROR.
+        FIND huvgr OF ArtBas NO-LOCK NO-ERROR.
+        FIND VarGr OF ArtBas NO-LOCK NO-ERROR.
+        FIND LevBas OF ArtBas NO-LOCK NO-ERROR.  
+        FIND ArtPris OF ArtBas NO-LOCK WHERE 
+          ArtPris.ProfilNr = Butiker.ProfilNr NO-ERROR.
+        IF NOT AVAILABLE ArtPris THEN 
+        FIND FIRST ArtPris OF ArtBas NO-LOCK NO-ERROR.    
+        FIND FIRST Moms NO-LOCK WHERE 
+          Moms.MomsProc = ttBongLinje.Mva% NO-ERROR.
+  
+        ASSIGN
+          ttBongLinje.BongTekst = IF ttBongLinje.BongTekst = '' THEN ArtBas.Bongtekst ELSE ttBongLinje.BongTekst 
+          ttBongLinje.LopeNr    = ArtBas.LopNr
+          ttBongLinje.VareGr    = ArtBas.Vg
+          ttBongLinje.DivInfo   = ArtBas.DivInfo[1]
+          ttBongLinje.HovedGr   = ArtBas.Hg
+          ttBongLinje.HovedGrBeskrivelse = IF AVAILABLE HuvGr THEN HuvGr.HgBeskr ELSE ttBongLinje.HovedGrBeskrivelse
+          ttBongLinje.VareGruppeNavn = IF AVAILABLE VArGr THEN VarGr.VgBeskr ELSE ttBongLinje.VareGruppeNavn
+          ttBongLinje.LevNr     = ArtBas.LevNr
+          ttBongLinje.LevNavn   = IF AVAILABLE LevBas THEN LevBas.levnamn ELSE ttBongLinje.LevNavn
+          ttBongLinje.MvaGr     = IF AVAILABLE Moms THEN Moms.MomsKod ELSE 1
+          ttBongLinje.MvaGruppeNavn = IF AVAILABLE Moms THEN Moms.Beskrivelse ELSE ttBongLinje.MvaGruppeNavn
+          ttBongLinje.BongPris  = IF AVAILABLE ArtPris THEN ArtPris.Pris[IF ArtPris.Tilbud THEN 2 ELSE 1] ELSE ttBongLinje.BongPris     
+          .
+      END.
+    END. /* VARELINJE */
+    
   END. /* LEGGPAINFO */
   
   IF rcTekst = '' THEN 

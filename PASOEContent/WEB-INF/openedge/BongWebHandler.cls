@@ -129,7 +129,6 @@ CLASS BongWebHandler INHERITS WebHandler:
     DEFINE VARIABLE pcJsonString AS LONGCHAR                        NO-UNDO.
     DEFINE VARIABLE piStatusCode AS INTEGER                         NO-UNDO.
   
-<<<<<<< Updated upstream
     MESSAGE 'POST HandlePost for BongWebHAndler'.
       
     EMPTY TEMP-TABLE ttBongHode.
@@ -137,15 +136,8 @@ CLASS BongWebHandler INHERITS WebHandler:
       
     rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
     ASSIGN 
-      pcLogg = 'BongWebHandler' + STRING(TODAY,'99999999') + '_' + REPLACE(STRING(TIME,'HH:MM:SS'),':','')
+      cLogg = 'BongWebHandler' + STRING(TODAY,'99999999') + '_' + REPLACE(STRING(TIME,'HH:MM:SS'),':','')
       .
-<<<<<<< HEAD
-    MESSAGE 'POST: ' + 'Bong mottatt.'.
-      
-=======
-    rStandardFunksjoner:SkrivTilLogg(pcLogg,
-      'POST: ' + 'Bong mottatt.'
-=======
     MESSAGE 'Behandle POST i BongWebHandler'.  
       
     initParam(  ).
@@ -153,16 +145,17 @@ CLASS BongWebHandler INHERITS WebHandler:
     rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
     rStandardFunksjoner:SkrivTilLogg(cLogg,
       'POST: ' + 'Behandle POST i BongWebHandler.'
->>>>>>> Stashed changes
       ).
     
->>>>>>> 0e56b081d4c7f911bd6bb12c91431fe4a5dbc24a
     IF poRequest:ContentType = 'application/json' THEN 
     DO:
       oData = CAST(poRequest:Entity, JsonObject).
       CAST(oData, JSONObject):Write(pcJsonString).
       
       MESSAGE STRING(pcJsonString).
+      OUTPUT TO VALUE('BongMottatt_' + STRING(TODAY,"99999999") + '_' + REPLACE(STRING(TIME,"HH:MM:SS"),':','') + '_' + STRING(ETIME) + '_' + '.json').
+      PUT UNFORMATTED STRING(pcJsonString) SKIP. 
+      OUTPUT CLOSE.
       
       DATASET dsBongHode:READ-JSON ("longchar", pcJsonString,"EMPTY") NO-ERROR.
       IF ERROR-STATUS:ERROR THEN 
@@ -233,6 +226,7 @@ CLASS BongWebHandler INHERITS WebHandler:
        enumeration */
     MESSAGE 'Ferdig behandle bong.'.
     RETURN 0.
+    
     
     
   /*      UNDO, THROW NEW Progress.Lang.AppError("METHOD NOT IMPLEMENTED").*/
