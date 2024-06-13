@@ -139,13 +139,14 @@ CLASS BongWebHandler INHERITS WebHandler:
     ASSIGN 
       pcLogg = 'BongWebHandler' + STRING(TODAY,'99999999') + '_' + REPLACE(STRING(TIME,'HH:MM:SS'),':','')
       .
-    rStandardFunksjoner:SkrivTilLogg(pcLogg,
-      'POST: ' + 'Bong mottatt.'
-      ).
+    MESSAGE 'POST: ' + 'Bong mottatt.'.
+      
     IF poRequest:ContentType = 'application/json' THEN 
     DO:
       oData = CAST(poRequest:Entity, JsonObject).
       CAST(oData, JSONObject):Write(pcJsonString).
+      
+      MESSAGE STRING(pcJsonString).
       
       DATASET dsBongHode:READ-JSON ("longchar", pcJsonString,"EMPTY") NO-ERROR.
       IF ERROR-STATUS:ERROR THEN 
@@ -153,6 +154,7 @@ CLASS BongWebHandler INHERITS WebHandler:
           pcTekst      = 'Feil syntaks i JSon melding. Kan ikke mappes til datasett.'.
           piStatusCode = 400.
           pcStatus     = 'FEIL'.
+          MESSAGE pcstatus STRING(piStatusCode) pcTekst.
         END.
       FIND FIRST ttBongHode NO-ERROR.
       IF NOT AVAILABLE ttBongHode THEN 
@@ -160,8 +162,10 @@ CLASS BongWebHandler INHERITS WebHandler:
           pcTekst      = 'Ugyldig eller tom datasett i melding.'.          
           piStatusCode = 400.
           pcStatus     = 'FEIL'.
+          MESSAGE pcstatus STRING(piStatusCode) pcTekst.
         END.
       ELSE DO:
+        MESSAGE pcstatus STRING(piStatusCode) pcTekst.
         RUN bo\lagrebong.p(INPUT DATASET dsBongHode,
                            OUTPUT pcStatus,
                            OUTPUT pcTekst,
@@ -172,6 +176,7 @@ CLASS BongWebHandler INHERITS WebHandler:
       pcTekst      = 'Feil ContentType: ' + poRequest:ContentType + '. Skal være: application/json'.
       piStatusCode = 400.
       pcStatus     = 'FEIL'.
+      MESSAGE pcstatus STRING(piStatusCode) pcTekst.
     END.
     
     oStatus = NEW JSonObject().
@@ -206,6 +211,7 @@ CLASS BongWebHandler INHERITS WebHandler:
        The mappings are maintained in the webapps's WEB-INF/web.xml 
        A predefined set of HTTP status codes is provided in the OpenEdge.Net.HTTP.StatusCodeEnum 
        enumeration */
+    MESSAGE 'Ferdig behandle bong.'.
     RETURN 0.
     
     
