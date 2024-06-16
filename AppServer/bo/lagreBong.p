@@ -108,7 +108,7 @@ DO.
       DO:
         ASSIGN  
           cStatus     = 'FEIL'
-          cTekst      = 'Bong finnes fra før med samme B_Id (' + STRING(ttBongHode.B_Id) + ').'
+          cTekst      = 'TEST Bong finnes fra før med samme B_Id (' + STRING(ttBongHode.B_Id) + ').'
           iStatusCode = 400
           .
         MESSAGE cstatus STRING(iStatusCode) cTekst.  
@@ -463,12 +463,12 @@ PROCEDURE addInfoBongHode:
     IF ttBongHode.SelgerNr = 0 THEN 
       DO:
         rcTekst = 'Felt BongHode.SelgerNr er ikke utfylt.'.
-        LEAVE VALIDERBONGHODE.
+        ttBongHode.SelgerNr = 1.
       END.
     IF ttBongHode.TTId = 0 THEN 
       DO:
         rcTekst = 'Felt BongHode.TTId er ikke utfylt.'.
-        LEAVE VALIDERBONGHODE.
+        ttBongHode.TTId = 1.
       END.
   END. /* VALIDERBONGHODE */  
 
