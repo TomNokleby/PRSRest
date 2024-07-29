@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <propath version="11.7" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="schema/propath.xsd">
+<propathentry env="all" kind="src" output="@{ROOT}\PASOEContent\WEB-INF\openedge" path="@{ROOT}\PASOEContent\WEB-INF\openedge" platform="All"/>
 <propathentry env="all" kind="folder" path="\PRS" platform="All"/>
 <propathentry env="all" kind="folder" path="\PRS\wrk" platform="All"/>
 <propathentry env="all" kind="folder" path="\PRS\win" platform="All"/>
@@ -12,6 +13,7 @@
 <propathentry env="all" kind="folder" path="\PRS\pdfinclude\samples" platform="All"/>
 <propathentry env="all" kind="folder" path="\PRS\pdfinclude\utilities" platform="All"/>
 <propathentry env="all" kind="src" path="@{ROOT}\AppServer" platform="All"/>
+<propathentry env="all" kind="dir" path="@{WORK}" platform="All"/>
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\oo" platform="Windows"/>
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\img" platform="Windows"/>
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\server" platform="Windows"/>
@@ -24,9 +26,7 @@
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\winsrc\samples\oo" platform="Windows"/>
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\Tools\11.7" platform="Windows"/>
 <propathentry env="all" kind="dir" path="C:\NSoft\JukeBox\Tools" platform="Windows"/>
-<propathentry env="all" kind="src" output="@{ROOT}\PASOEContent\WEB-INF\openedge" path="@{ROOT}\PASOEContent\WEB-INF\openedge" platform="All"/>
 <propathentry env="all" excluding="@{ROOT}/PASOEContent/static" kind="src" path="@{ROOT}" platform="All"/>
-<propathentry env="all" kind="dir" path="@{WORK}" platform="All"/>
 <propathentry env="gui" kind="con" path="com.openedge.pdt.text.GUI_LIBRARIES" platform="All"/>
 <propathentry env="tty" kind="con" path="com.openedge.pdt.text.TTY_LIBRARIES" platform="All"/>
 <propathentry env="all" kind="con" path="com.openedge.pdt.text.DLC_PATHS" platform="All"/>
