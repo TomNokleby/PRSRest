@@ -29,7 +29,7 @@ DEFINE VARIABLE lDataSettId AS DECIMAL NO-UNDO.
 DEFINE VARIABLE iButNr      AS INTEGER NO-UNDO.
 DEFINE VARIABLE cLogg AS CHARACTER NO-UNDO.
 
-DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
+/*DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.*/
 
 /*BLOCK-LEVEL ON ERROR UNDO, THROW.*/
 
@@ -37,18 +37,23 @@ DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
 
 
 /* ***************************  Main Block  *************************** */
-rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
+/*rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.*/
 
 ASSIGN 
   cLogg = 'Lagrebong' + STRING(TODAY,'99999999')
   .
+
 OS-COMMAND SILENT mkdir VALUE('log') NO-ERROR. 
 
 FIND FIRST ttBongHode NO-LOCK NO-ERROR.
 
+MESSAGE "TEST-1" SEARCH('cls\StdFunk\StandardFunksjoner.cls').
+MESSAGE "Propath i lagrebong.p:" PROPATH.
+
 IF AVAILABLE ttBongHode THEN 
 BONGMOTTATT:
-DO.
+DO:
+  MESSAGE "TEST-2".
   ASSIGN 
   iButNr   = ttBongHode.ButikkNr
   cKatalog = IF SEARCH('tnc.txt') <> ? 
@@ -65,12 +70,12 @@ DO.
               REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(STRING(NOW),'/',''),':',''),' ','_'),',','_'),'+','_') +
               '.json'
               .
-  rStandardFunksjoner:SkrivTilLogg(cLogg,
-      'Fil: ' + cFilNavn   
-      ).
-  MESSAGE 'Loggfil: ' + cFilNavn.  
-      
-  /* Lagrer en kopi av bongen på disk. */
+MESSAGE "TEST-3".              
+/*  rStandardFunksjoner:SkrivTilLogg(cLogg,*/
+/*      'Fil: ' + cFilNavn                 */
+/*      ).                                 */
+MESSAGE "TEST-4".      
+  /* Lagrer en kopi av bongen pï¿½ disk. */
   DATASET dsBongHode:WRITE-JSON('file',cFilNavn,TRUE) NO-ERROR.
   IF ERROR-STATUS:ERROR THEN
   DO:
@@ -84,7 +89,7 @@ DO.
   ELSE 
   LAGRE:
   DO:
-    /* Må gjøre dette på nytt da skriving til jason filen gjør at bufferen blir borte! */
+    /* Mï¿½ gjï¿½re dette pï¿½ nytt da skriving til jason filen gjï¿½r at bufferen blir borte! */
     FIND FIRST ttBongHode NO-LOCK NO-ERROR.
 
     /* Sjekker butikk */
@@ -94,21 +99,21 @@ DO.
       DO:
         ASSIGN
           cStatus     = 'FEIL'
-          cTekst      = 'Ukjent butikk på bongen (' + STRING(iButNr) + ').'
+          cTekst      = 'Ukjent butikk pï¿½ bongen (' + STRING(iButNr) + ').'
           iStatusCode = 400
           .
         MESSAGE cstatus STRING(iStatusCode) cTekst.  
         LEAVE LAGRE.
       END.
     
-    /* Finnes bong fra før med samme B_Id? */
+    /* Finnes bong fra fï¿½r med samme B_Id? */
     FIND FIRST BongHode NO-LOCK WHERE 
                BongHode.B_Id = ttBongHode.b_id NO-ERROR.
     IF AVAILABLE BongHode THEN  
       DO:
         ASSIGN  
           cStatus     = 'FEIL'
-          cTekst      = 'TEST Bong finnes fra før med samme B_Id (' + STRING(ttBongHode.B_Id) + ').'
+          cTekst      = 'TEST Bong finnes fra fï¿½r med samme B_Id (' + STRING(ttBongHode.B_Id) + ').'
           iStatusCode = 400
           .
         MESSAGE cstatus STRING(iStatusCode) cTekst.  
@@ -125,7 +130,7 @@ DO.
       DO:
         ASSIGN  
           cStatus     = 'FEIL'
-          cTekst      = 'Bong finnes fra før med samme butikk, gruppe, kasse, dato og bongnr.'
+          cTekst      = 'Bong finnes fra fï¿½r med samme butikk, gruppe, kasse, dato og bongnr.'
           iStatusCode = 400
           .
         MESSAGE cstatus STRING(iStatusCode) cTekst.  
@@ -134,7 +139,7 @@ DO.
     ELSE DO:
       LAGREBONG: 
       DO TRANSACTION:
-        /* Validerer og legger på informasjon i bonghode. */ 
+        /* Validerer og legger pï¿½ informasjon i bonghode. */ 
         RUN addInfoBongHode.
         IF RETURN-VALUE <> 'OK' THEN 
         DO:
@@ -173,7 +178,7 @@ DO.
         LESBONGLINJER:
         FOR EACH ttBongLinje:
           
-          /* Validerer og adderer informasjon på bonglinje. */
+          /* Validerer og adderer informasjon pï¿½ bonglinje. */
           RUN addInfoBongLinje.
           IF RETURN-VALUE <> 'OK' THEN 
           DO:
@@ -230,10 +235,9 @@ DO.
     END. /* LAGRE */
   END.
 
-  rStandardFunksjoner:SkrivTilLogg(cLogg,
-      'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst   
-      ).
-  MESSAGE 'Ferdig lagrebong.p:' cstatus STRING(iStatusCode) cTekst.  
+/*  rStandardFunksjoner:SkrivTilLogg(cLogg,                                        */
+/*      'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst*/
+/*      ).                                                                         */
   
   IF iStatusCode = 200 THEN 
   DO:
@@ -407,7 +411,7 @@ PROCEDURE addInfoBongHode:
 ------------------------------------------------------------------------------*/
   DEFINE VARIABLE rcTekst AS CHARACTER NO-UNDO.
   
-  /* Sjekker felt som må være med. */
+  /* Sjekker felt som mï¿½ vï¿½re med. */
   /*      "b_id": 230500036217.0,  */
   /*      "BongNr": 5,             */
   /*      "ButikkNr": 999,         */
@@ -493,11 +497,11 @@ PROCEDURE addInfoBongHode:
       .
     IF ttBongHode.MedlemsNr > 0 OR ttBongHode.MedlemsKort <> '' THEN 
     DO:
-      /* Her må kode legges inn...*/
+      /* Her mï¿½ kode legges inn...*/
     END.
     IF ttBongHode.KundeNr > 0 OR ttBongHode.KundeKort <> '' THEN 
     DO:
-      /* Her må kode legges inn...*/
+      /* Her mï¿½ kode legges inn...*/
     END.
     IF ttBongHode.SelgerNr > 0 THEN 
     DO:
@@ -525,7 +529,7 @@ PROCEDURE addInfoBongHode:
            FIND FIRST MedlemsKort NO-LOCK WHERE MedlemsKort.KortNr = STRING(INT(ttBongHode.Medlemskort),"999999") NO-ERROR.
        ELSE IF NOT AVAILABLE MedlemsKort AND LENGTH(ttBongHode.Medlemskort) > 6 THEN
            FIND FIRST MedlemsKort NO-LOCK WHERE MedlemsKort.KortNr = ttBongHode.Medlemskort NO-ERROR.
-       /* Vi har funnet et medlemskort, altså er dette et medlem. */
+       /* Vi har funnet et medlemskort, altsï¿½ er dette et medlem. */
        IF AVAILABLE MedlemsKort THEN MEDLEMSKORT: 
        DO:
            ttBongHode.KortType = 3.
@@ -534,7 +538,7 @@ PROCEDURE addInfoBongHode:
            DO:
                ASSIGN ttBongHode.MedlemsNr  = Medlem.MedlemsNr
                       ttBongHode.MedlemNavn = Medlem.Fornavn + " " + Medlem.EtterNavn.
-               /* Er medlemmet koblet til en kunde, skal også kundenummer settes i transaksjonen. */
+               /* Er medlemmet koblet til en kunde, skal ogsï¿½ kundenummer settes i transaksjonen. */
                IF ttBongHode.Kundekort = "" AND Medlem.KundeNr <> 0 THEN 
                DO:
                  FIND Kunde NO-LOCK WHERE
@@ -619,14 +623,14 @@ PROCEDURE addInfoBongLinje:
 
   VALIDERBONGLINJE:
   DO:
-    /*Felt som må settes:                                          */
+    /*Felt som mï¿½ settes:                                          */
     /*-------------------                                          */
     /*"Antall": 1.000,                                             */
     /*"LinjeNr": 1,                                                */
     /*"TBId": 1,                                                   */
     /*"LinjeSum": 1200.00,                                         */
     /*"Strekkode": "7325706579944",                                */
-    /*"MButikkNr": Må settes ved overføring                        */
+    /*"MButikkNr": Mï¿½ settes ved overfï¿½ring                        */
     /*"MvaKr": 192.00,                            */
     /*"Mva%": 25.00,                              */
     /*"TTId": 1,                                  */
@@ -662,17 +666,17 @@ PROCEDURE addInfoBongLinje:
       END.
     IF ttBongLinje.MButikkNr = 0 AND ttBongLinje.TTId = 6 THEN
       DO:
-        rcTekst = 'Felt BongLinje.MButikkNr er ikke utfylt på varelinje med overføring.'.
+        rcTekst = 'Felt BongLinje.MButikkNr er ikke utfylt pï¿½ varelinje med overfï¿½ring.'.
         LEAVE VALIDERBONGLINJE.
       END.
     IF ttBongLinje.Mva% = 0 AND CAN-DO('01,06',STRING(ttBongLinje.TTId)) THEN
       DO:
-        rcTekst = 'Felt BongLinje.Mva% er ikke utfylt på varelinje med varesalg eller overføring.'.
+        rcTekst = 'Felt BongLinje.Mva% er ikke utfylt pï¿½ varelinje med varesalg eller overfï¿½ring.'.
         LEAVE VALIDERBONGLINJE.
       END.
     IF ttBongLinje.MvaKr = 0 AND CAN-DO('01,06',STRING(ttBongLinje.TTId)) THEN
       DO:
-        rcTekst = 'Felt BongLinje.MvaKr er ikke utfylt på varelinje med varesalg eller overføring.'.
+        rcTekst = 'Felt BongLinje.MvaKr er ikke utfylt pï¿½ varelinje med varesalg eller overfï¿½ring.'.
         LEAVE VALIDERBONGLINJE.
       END.
   END. /* VALIDERBONGLINJE */  
@@ -682,7 +686,7 @@ PROCEDURE addInfoBongLinje:
     /*Felt som kan settes:                                         */
     /*-------------------                                          */
     /*"RefNr": 0,                                                  */
-    /*"RefTekst": Refnr og reftekst feltene settes hvis man ønsker.*/
+    /*"RefTekst": Refnr og reftekst feltene settes hvis man ï¿½nsker.*/
     /*"FeilKode": 0,                                               */
     /*"FeilKodeTekst": Her settes feilkode ved reklamasjon.        */
     /*"LinjeRab": 240.00,                                          */

@@ -30,7 +30,6 @@ CLASS MyWebVareHandler INHERITS WebHandler:
   END METHOD.
 
   
-  
   /*------------------------------------------------------------------------------
             Purpose: Default handler for the HTTP GET method. The request being 
                      serviced and an optional status code is returned. A zero or 

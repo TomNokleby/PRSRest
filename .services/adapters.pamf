@@ -14,7 +14,11 @@
           </lm:properties>
         </lm:productDetails>
       </lm:details>
-      <lm:nodes id="/PRSRestService_groupingNode" name="PRSRestService"/>
+      <lm:nodes id="/PRSRestService_groupingNode" name="PRSRestService">
+        <lm:details>
+          <lm:adapterDetails/>
+        </lm:details>
+      </lm:nodes>
       <lm:propertyDetails/>
     </lm:services>
     <lm:services displayName="LagerEndretService" id="LagerEndretService" product="Progress Developer Studio for OpenEdge" serviceFolder="Expose/rest/LagerEndretService" serviceName="LagerEndretService">
@@ -44,7 +48,11 @@
           </lm:properties>
         </lm:productDetails>
       </lm:details>
-      <lm:nodes id="/LagerEndretService_groupingNode" name="LagerEndretService"/>
+      <lm:nodes id="/LagerEndretService_groupingNode" name="LagerEndretService">
+        <lm:details>
+          <lm:adapterDetails/>
+        </lm:details>
+      </lm:nodes>
       <lm:propertyDetails/>
     </lm:services>
     <lm:services displayName="LokasjonslisteService" id="LokasjonslisteService" product="Progress Developer Studio for OpenEdge" serviceFolder="Expose/rest/LokasjonslisteService" serviceName="LokasjonslisteService">
@@ -144,7 +152,11 @@
           </lm:properties>
         </lm:productDetails>
       </lm:details>
-      <lm:nodes id="/LokasjonslisteService_groupingNode" name="LokasjonslisteService"/>
+      <lm:nodes id="/LokasjonslisteService_groupingNode" name="LokasjonslisteService">
+        <lm:details>
+          <lm:adapterDetails/>
+        </lm:details>
+      </lm:nodes>
       <lm:propertyDetails/>
     </lm:services>
     <lm:services displayName="VareService" id="VareService" product="Progress Developer Studio for OpenEdge" serviceFolder="Expose/rest/VareService" serviceName="VareService">
@@ -188,7 +200,11 @@
           </lm:properties>
         </lm:productDetails>
       </lm:details>
-      <lm:nodes id="/VareService_groupingNode" name="VareService"/>
+      <lm:nodes id="/VareService_groupingNode" name="VareService">
+        <lm:details>
+          <lm:adapterDetails/>
+        </lm:details>
+      </lm:nodes>
       <lm:propertyDetails/>
     </lm:services>
     <lm:services displayName="VareOgLagerService" id="VareOgLagerService" product="Progress Developer Studio for OpenEdge" serviceFolder="Expose/rest/VareOgLagerService" serviceName="VareOgLagerService">
@@ -218,7 +234,11 @@
           </lm:properties>
         </lm:productDetails>
       </lm:details>
-      <lm:nodes id="/VareOgLagerService_groupingNode" name="VareOgLagerService"/>
+      <lm:nodes id="/VareOgLagerService_groupingNode" name="VareOgLagerService">
+        <lm:details>
+          <lm:adapterDetails/>
+        </lm:details>
+      </lm:nodes>
       <lm:propertyDetails/>
     </lm:services>
   </lm:serviceCollection>

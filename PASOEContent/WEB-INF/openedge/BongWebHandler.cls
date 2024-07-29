@@ -24,8 +24,6 @@ CLASS BongWebHandler INHERITS WebHandler:
 
   DEFINE VARIABLE cLogg AS CHARACTER INITIAL 'BongWebHandler' NO-UNDO.
 
-  DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
-
   DEFINE TEMP-TABLE ttRespons NO-UNDO 
     FIELD cStatus AS CHARACTER SERIALIZE-NAME 'Status'
     FIELD cTekst  AS CHARACTER SERIALIZE-NAME 'Tekst'
@@ -129,32 +127,25 @@ CLASS BongWebHandler INHERITS WebHandler:
     DEFINE VARIABLE pcJsonString AS LONGCHAR                        NO-UNDO.
     DEFINE VARIABLE piStatusCode AS INTEGER                         NO-UNDO.
   
-    MESSAGE 'POST HandlePost for BongWebHAndler'.
+    MESSAGE 'POST HandlePost for BongWebHAndler 2'.
       
     EMPTY TEMP-TABLE ttBongHode.
     EMPTY TEMP-TABLE ttBongLinje.
       
-    rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
     ASSIGN 
       cLogg = 'BongWebHandler' + STRING(TODAY,'99999999') + '_' + REPLACE(STRING(TIME,'HH:MM:SS'),':','')
       .
     MESSAGE 'Behandle POST i BongWebHandler'.  
-      
     initParam(  ).
       
-    rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
-    rStandardFunksjoner:SkrivTilLogg(cLogg,
-      'POST: ' + 'Behandle POST i BongWebHandler.'
-      ).
-    
     IF poRequest:ContentType = 'application/json' THEN 
     DO:
       oData = CAST(poRequest:Entity, JsonObject).
       CAST(oData, JSONObject):Write(pcJsonString).
-      
-      MESSAGE STRING(pcJsonString).
+
+      MESSAGE substring(STRING(pcJsonString),1,3500).
       OUTPUT TO VALUE('BongMottatt_' + STRING(TODAY,"99999999") + '_' + REPLACE(STRING(TIME,"HH:MM:SS"),':','') + '_' + STRING(ETIME) + '_' + '.json').
-      PUT UNFORMATTED STRING(pcJsonString) SKIP. 
+      PUT UNFORMATTED SUBSTRING(STRING(pcJsonString),1,3500) SKIP. 
       OUTPUT CLOSE.
       
       DATASET dsBongHode:READ-JSON ("longchar", pcJsonString,"EMPTY") NO-ERROR.
@@ -174,7 +165,9 @@ CLASS BongWebHandler INHERITS WebHandler:
           MESSAGE pcstatus STRING(piStatusCode) pcTekst.
         END.
       ELSE DO:
-        MESSAGE pcstatus STRING(piStatusCode) pcTekst.
+        MESSAGE 'Starter procedure:' SEARCH('bo\lagrebong.p').
+        MESSAGE "pcstatus:" pcstatus STRING(piStatusCode) pcTekst.
+        MESSAGE 'Propath:' PROPATH.
         RUN bo\lagrebong.p(INPUT DATASET dsBongHode,
                            OUTPUT pcStatus,
                            OUTPUT pcTekst,
@@ -182,16 +175,12 @@ CLASS BongWebHandler INHERITS WebHandler:
       END.
     END.
     ELSE DO:
-      pcTekst      = 'Feil ContentType: ' + poRequest:ContentType + '. Skal være: application/json'.
+      pcTekst      = 'Feil ContentType: ' + poRequest:ContentType + '. Skal vï¿½re: application/json'.
       piStatusCode = 400.
       pcStatus     = 'FEIL'.
       MESSAGE pcstatus STRING(piStatusCode) pcTekst.
     END.
 
-    rStandardFunksjoner:SkrivTilLogg(cLogg,
-      'POST: ' + ' StatusCode: ' + STRING(piStatusCode) + ' Status: ' + pcStatus + ' ' + pcTekst   
-      ).
-    
     oStatus = NEW JSonObject().
         
     CREATE ttRespons.
