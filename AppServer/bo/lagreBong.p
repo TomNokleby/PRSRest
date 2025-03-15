@@ -29,7 +29,7 @@ DEFINE VARIABLE lDataSettId AS DECIMAL NO-UNDO.
 DEFINE VARIABLE iButNr      AS INTEGER NO-UNDO.
 DEFINE VARIABLE cLogg AS CHARACTER NO-UNDO.
 
-/*DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.*/
+DEFINE VARIABLE rStandardFunksjoner AS cls.StdFunk.StandardFunksjoner NO-UNDO.
 
 /*BLOCK-LEVEL ON ERROR UNDO, THROW.*/
 
@@ -37,12 +37,11 @@ DEFINE VARIABLE cLogg AS CHARACTER NO-UNDO.
 
 
 /* ***************************  Main Block  *************************** */
-/*rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.*/
+rStandardFunksjoner = NEW cls.StdFunk.StandardFunksjoner( ) NO-ERROR.
 
 ASSIGN 
   cLogg = 'Lagrebong' + STRING(TODAY,'99999999')
   .
-
 OS-COMMAND SILENT mkdir VALUE('log') NO-ERROR. 
 
 FIND FIRST ttBongHode NO-LOCK NO-ERROR.
@@ -70,11 +69,10 @@ DO:
               REPLACE(REPLACE(REPLACE(REPLACE(REPLACE(STRING(NOW),'/',''),':',''),' ','_'),',','_'),'+','_') +
               '.json'
               .
-MESSAGE "TEST-3".              
-/*  rStandardFunksjoner:SkrivTilLogg(cLogg,*/
-/*      'Fil: ' + cFilNavn                 */
-/*      ).                                 */
-MESSAGE "TEST-4".      
+  rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'Fil: ' + cFilNavn   
+      ).
+      
   /* Lagrer en kopi av bongen p� disk. */
   DATASET dsBongHode:WRITE-JSON('file',cFilNavn,TRUE) NO-ERROR.
   IF ERROR-STATUS:ERROR THEN
@@ -235,9 +233,9 @@ MESSAGE "TEST-4".
     END. /* LAGRE */
   END.
 
-/*  rStandardFunksjoner:SkrivTilLogg(cLogg,                                        */
-/*      'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst*/
-/*      ).                                                                         */
+  rStandardFunksjoner:SkrivTilLogg(cLogg,
+      'StatusCode: ' + STRING(iStatusCode) + ' Status: ' + cStatus + ' ' + cTekst   
+      ).
   
   IF iStatusCode = 200 THEN 
   DO:
