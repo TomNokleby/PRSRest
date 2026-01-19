@@ -31,3 +31,5 @@ PASOEContent/WEB-INF/users.properties
 PASOEContent/WEB-INF/web.xml
 
 .dbconnection
+
+.propath
