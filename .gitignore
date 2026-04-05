@@ -5,6 +5,8 @@
 
 .settings/
 
+.builder/
+
 protrace.22360
 ._*.*
 ._*
