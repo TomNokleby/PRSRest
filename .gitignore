@@ -33,3 +33,9 @@ PASOEContent/WEB-INF/web.xml
 .dbconnection
 
 .propath
+
+.vscode/launch.json
+
+.vscode/settings.json
+
+openedge-project.json

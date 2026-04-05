@@ -4,7 +4,7 @@
     Syntax      : 
     Author(s)   : tny
     Created     : Wed Aug 01 11:15:23 CEST 2018
-    Notes       : 
+    Notes       : La inn kommentar for å få en commit til reposetory 5/4-26.
   ----------------------------------------------------------------------*/
   
 @program FILE(name="Lager.cls", module="AppServer").
